@@ -26,6 +26,7 @@ No production code should be added until the relevant Phase 01 entry criteria an
 JARVIS/
 |-- AGENTS.md
 |-- README.md
+|-- SECURITY.md
 |-- backend/
 |   `-- README.md
 |-- docs/
@@ -51,29 +52,86 @@ JARVIS/
 |   |   |-- Phase_05_UI.md
 |   |   |-- Phase_06_Integration.md
 |   |   `-- development_workflow.md
-|   |-- implementation/
-|   |   |-- api_contracts.md
-|   |   |-- coding_standards.md
-|   |   |-- database_strategy.md
-|   |   `-- event_contracts.md
+    |   |-- implementation/
+    |   |   |-- api_contracts.md
+    |   |   |-- coding_standards.md
+    |   |   |-- compose_operations.md
+    |   |   |-- database_schema_foundation.md
+    |   |   |-- database_strategy.md
+    |   |   |-- event_contracts.md
+    |   |   |-- lockfile_policy.md
+    |   |   |-- nats_governance.md
+    |   |   |-- ollama_adapter.md
+    |   |   |-- qdrant_governance.md
+    |   |   `-- redis_governance.md
 |   |-- prompts/
 |   |   |-- claude_code_prompt.md
 |   |   |-- codex_prompt.md
 |   |   |-- gemini_cli_prompt.md
 |   |   `-- master_context.md
-|   `-- status/
-|       `-- development_status.md
-|-- frontend/
-|   `-- README.md
-|-- infrastructure/
-|   `-- README.md
-|-- shared/
-|   `-- README.md
-|-- tests/
-|   `-- README.md
-`-- tools/
-    `-- README.md
+    |   `-- status/
+    |       `-- development_status.md
+    |-- frontend/
+    |   |-- README.md
+    |   `-- package.json
+    |-- infrastructure/
+    |   `-- README.md
+    |-- shared/
+    |   `-- README.md
+    |-- tests/
+    |   |-- README.md
+    |   |-- test_architecture_fitness.py
+    |   |-- test_backup_restore.py
+    |   |-- test_compose_hardening.py
+    |   |-- test_lockfile.py
+    |   |-- test_model_verification.py
+    |   |-- test_nats_governance.py
+    |   |-- test_nats_payload_policy.py
+    |   |-- test_ollama_adapter.py
+    |   |-- test_payload_enforcement.py
+    |   |-- test_qdrant_governance.py
+    |   |-- test_redis_governance.py
+    |   `-- test_sbom.py
+    `-- tools/
+        |-- README.md
+        |-- backup/
+        |   |-- backup.py
+        |   |-- crypto.py
+        |   |-- manifest.py
+        |   `-- restore.py
+        |-- lockfile/
+        |   `-- verify.py
+        |-- model_verification/
+        |   |-- manifest.py
+        |   |-- verify_models.py
+        |   `-- verify_models.sh
+        `-- sbom/
+            `-- generate.py
 ```
+
+## Phase 01 Tooling
+
+* **Backend** — Python 3.12, `uv` workspace, Ruff, Mypy strict, pytest.
+* **Frontend** — Node.js 22 LTS, `pnpm` workspaces, TypeScript, Tailwind.
+* **Infrastructure** — Docker Compose (PostgreSQL 16, Redis 7, Qdrant,
+  NATS JetStream, Ollama).
+* **CI** — GitHub Actions (`.github/workflows/ci.yml`):
+  foundation job (lockfile verify, Ruff, Mypy strict, pytest with
+  coverage, gitleaks) and docker-smoke job (Compose up, healthchecks,
+  SBOM).
+* **Lockfile policy** — `tools/lockfile/verify.py` (uv + pnpm).
+* **Compose hardening** — `docker-compose.yml` (loopback,
+  `restart: unless-stopped`, healthchecks, resource limits,
+  `stop_grace_period`, `depends_on.condition: service_healthy`).
+* **Redis governance** — `backend/core/redis_governance.py`.
+* **Qdrant governance** — `backend/core/qdrant_governance.py`.
+* **Ollama adapter** — `backend/core/ollama.py` (ModelPort,
+  EmbeddingPort, GenerationPort, VisionPort).
+* **Backup** — `tools/backup/` (AES-256-GCM, PBKDF2-HMAC-SHA256
+  600 000 iterations).
+* **SBOM** — `tools/sbom/generate.py` (CycloneDX 1.5).
+* **Model verification** — `tools/model_verification/` (manifest,
+  digests, smoke inference).
 
 ## Document Precedence
 

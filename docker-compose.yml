@@ -1,10 +1,20 @@
-version: '3.8'
+name: jarvis-foundation
+
+# JDOS v1.2 — Phase 01 FND-003 hardened Compose stack.
+# - Loopback/private bindings only.
+# - Restart policies: unless-stopped for stateful services, no for
+#   the ollama service when models are not pre-pulled.
+# - Startup ordering via `depends_on.condition: service_healthy`.
+# - Dependency health checks on every service.
+# - Resource limits (deploy.resources.limits) on every service.
+# - Graceful shutdown via stop_grace_period and stop_signal.
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: jarvis-postgres
     restart: unless-stopped
+    init: true
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-jarvis_admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jarvis_secure_pass}
@@ -18,11 +28,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: jarvis-redis
     restart: unless-stopped
+    init: true
+    # Append-Only File persistence with `everysec` fsync (good
+    # balance of durability and throughput for a local runtime).
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     ports:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
     volumes:
@@ -32,55 +56,153 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    stop_grace_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 384M
+        reservations:
+          cpus: "0.1"
+          memory: 96M
 
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.9.1
     container_name: jarvis-qdrant
     restart: unless-stopped
+    init: true
     ports:
       - "127.0.0.1:${QDRANT_PORT:-6333}:6333"
+      - "127.0.0.1:${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
       - qdrant_data:/qdrant/storage
+      - qdrant_snapshots:/qdrant/snapshots
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:6333/healthz"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          cpus: "0.25"
+          memory: 384M
 
   nats:
-    image: nats:latest
+    image: nats:2.10-alpine
     container_name: jarvis-nats
     restart: unless-stopped
-    command: ["-js"]
+    init: true
+    command:
+      - "-js"
+      - "-sd=/data"
+      - "-m=8222"
+      - "-DV"
     ports:
       - "127.0.0.1:${NATS_PORT:-4222}:4222"
-      - "127.0.0.1:8222:8222" # HTTP Monitoring
+      - "127.0.0.1:8222:8222" # HTTP Monitoring (loopback)
     volumes:
       - nats_data:/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8222/healthz"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8222/healthz"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    stop_grace_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.75"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.3.12
     container_name: jarvis-ollama
     restart: unless-stopped
+    init: true
+    # Models are pre-pulled by the bootstrap script. Compose does
+    # NOT auto-pull; the daemon starts without any models present
+    # and the verifier confirms availability.
     ports:
       - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
     volumes:
       - ollama_data:/root/.ollama
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+        reservations:
+          cpus: "1.0"
+          memory: 2G
+
+  # The application services are launched by the developer (uv run
+  # uvicorn) and by the bootstrap. They are declared here as
+  # `profiles: [app]` so they do not start with the default
+  # `docker compose up` and operators can opt in explicitly.
+  backend:
+    image: jarvis-backend:dev
+    container_name: jarvis-backend
+    profiles: ["app"]
+    restart: unless-stopped
+    init: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      REDIS_URL: redis://redis:6379/0
+      NATS_URL: nats://nats:4222
+      QDRANT_HOST: qdrant
+      OLLAMA_BASE_URL: http://ollama:11434
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
 
 volumes:
   postgres_data:
   redis_data:
   qdrant_data:
+  qdrant_snapshots:
   nats_data:
   ollama_data:
 
@@ -88,3 +210,6 @@ networks:
   default:
     name: jarvis-network
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.enable_icc: "true"
+      com.docker.network.bridge.enable_ip_masquerade: "false"

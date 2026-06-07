@@ -1,0 +1,36 @@
+# gitleaks configuration (Phase 01, FND-008).
+# The CI pipeline runs ``gitleaks/gitleaks-action@v2`` against every
+# push and pull request. This file augments the default ruleset with
+# JARVIS-specific patterns and explicit allow-lists.
+
+title = "JARVIS gitleaks config"
+
+# Allow-list paths that legitimately contain placeholder strings
+# (tests, documentation, examples). The CI environment is expected to
+# have no real secrets in source control.
+[allowlist]
+paths = [
+  '''.env.example''',
+  '''docs/.*\.md''',
+  '''tests/.*\.py''',
+  '''conftest\.py''',
+]
+
+# Detector patterns
+[[rules]]
+id = "jarvis-credential"
+description = "JARVIS internal credential pattern"
+regex = '''(?i)(jarvis[_-]?(api[_-]?key|token|secret))\s*[:=]\s*['"][^'"]{8,}['"]'''
+keywords = ["jarvis_api_key", "jarvis_token", "jarvis_secret"]
+
+[[rules]]
+id = "openai-style-key"
+description = "OpenAI-style API key"
+regex = '''sk-(proj-)?[A-Za-z0-9]{20,}'''
+keywords = ["sk-"]
+
+[[rules]]
+id = "anthropic-style-key"
+description = "Anthropic API key"
+regex = '''sk-ant-[A-Za-z0-9-]{20,}'''
+keywords = ["sk-ant-"]

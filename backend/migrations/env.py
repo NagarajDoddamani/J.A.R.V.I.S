@@ -1,52 +1,69 @@
-from logging.config import fileConfig
+from __future__ import annotations
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+import sys
+from logging.config import fileConfig
+from pathlib import Path
 
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
-# Import settings
-from backend.core.config import settings
+# Make ``backend`` importable when Alembic is invoked from the repo root.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+from backend.core.config import settings  # noqa: E402
+
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
+# Foundation-layer migrations do not use SQLAlchemy ORM metadata.
+# The first iteration is hand-authored DDL; future revisions may add a
+# declarative base in ``backend.core.db``.
 target_metadata = None
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
+# Per-service schemas we own from the foundation migration onward.
+SERVICE_SCHEMAS: tuple[str, ...] = (
+    "orchestration",
+    "memory",
+    "knowledge",
+    "notification",
+    "settings",
+    "audit",
+)
+
+
+def _database_url() -> str:
+    url = settings.POSTGRES_URL
+    if not url:
+        raise RuntimeError("POSTGRES_URL is not configured; check backend/.env")
+    return url
+
+
+def _ensure_version_schema(connection) -> None:
+    """Make sure the schema hosting the Alembic version table exists.
+
+    Alembic creates the version table lazily on first use; if the
+    target schema is absent the create-table statement fails. Creating
+    the schema here keeps ``version_table_schema = platform`` working
+    for the foundation migration.
+    """
+    from sqlalchemy import text
+
+    connection.execute(text('CREATE SCHEMA IF NOT EXISTS "platform"'))
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is also acceptable
-    here.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
-    url = settings.POSTGRES_URL
+    """Run migrations in 'offline' mode."""
     context.configure(
-        url=url,
+        url=_database_url(),
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_schemas=True,
+        version_table_schema="platform",
     )
 
     with context.begin_transaction():
@@ -54,14 +71,9 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
-
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
+    """Run migrations in 'online' mode."""
     configuration = config.get_section(config.config_ini_section, {})
-    configuration["sqlalchemy.url"] = settings.POSTGRES_URL
+    configuration["sqlalchemy.url"] = _database_url()
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -69,13 +81,16 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
+        _ensure_version_schema(connection)
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            include_schemas=True,
+            version_table_schema="platform",
         )
 
         with context.begin_transaction():
             context.run_migrations()
-
 
 
 if context.is_offline_mode():

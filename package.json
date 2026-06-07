@@ -6,13 +6,26 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "infra:up": "docker-compose up -d",
-    "infra:down": "docker-compose down",
-    "infra:status": "docker-compose ps",
-    "infra:logs": "docker-compose logs -f",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:status": "docker compose ps",
+    "infra:logs": "docker compose logs -f",
+    "backend:install": "cd backend && uv sync",
     "backend:dev": "cd backend && uv run uvicorn main:app --reload",
-    "lint": "pnpm -r run lint",
-    "test": "pnpm -r run test"
+    "backend:migrate": "cd backend && uv run alembic upgrade head",
+    "lockfile:verify": "python -m tools.lockfile.verify",
+    "lockfile:generate": "python -m tools.lockfile.verify --generate",
+    "lint": "cd backend && uv run ruff check .",
+    "format": "cd backend && uv run ruff format .",
+    "typecheck": "cd backend && uv run mypy --strict .",
+    "test": "cd backend && uv run pytest ../tests -q",
+    "test:cov": "cd backend && uv run pytest ../tests -q --cov --cov-fail-under=70",
+    "fitness": "cd backend && uv run pytest ../tests/test_architecture_fitness.py -q",
+    "sbom": "uv run python -m tools.sbom.generate --out-dir build/sbom",
+    "verify:models": "JARVIS_VERIFY_OFFLINE=1 uv run python -m tools.model_verification.verify_models",
+    "verify:models:live": "uv run python -m tools.model_verification.verify_models",
+    "backup": "uv run python -m tools.backup.backup --out build/backup",
+    "restore": "uv run python -m tools.backup.restore --in build/backup --target build/restore"
   },
   "devDependencies": {
     "typescript": "^5.4.5"

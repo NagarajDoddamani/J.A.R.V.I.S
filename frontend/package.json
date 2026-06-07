@@ -1,0 +1,17 @@
+{
+  "name": "@jarvis/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "JARVIS Frontend (Tauri + React + TypeScript + Tailwind)",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "lint": "echo \"Phase 02: frontend lint will be wired here\" && exit 0",
+    "test": "echo \"Phase 02: frontend tests will be wired here\" && exit 0",
+    "typecheck": "echo \"Phase 02: frontend typecheck will be wired here\" && exit 0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

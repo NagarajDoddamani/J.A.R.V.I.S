@@ -163,6 +163,23 @@ for i in "${!REQUIRED_PORTS[@]}"; do
     fi
 done
 
+# 6. Verify Lockfiles (FND-001)
+write_header "Checking Lockfiles (FND-001)"
+if command -v python3 &>/dev/null; then
+    LOCKFILE_RESULT=$(python3 -m tools.lockfile.verify 2>&1)
+    LOCKFILE_EXIT=$?
+    if [ $LOCKFILE_EXIT -eq 0 ]; then
+        write_pass "Lockfiles in sync"
+        echo -e "${CYAN}       $LOCKFILE_RESULT${NC}"
+    else
+        write_fail "Lockfiles are missing or stale." \
+            "Run: cd backend && uv lock && cd .. && pnpm install --lockfile-only"
+        echo -e "${YELLOW}       $LOCKFILE_RESULT${NC}"
+    fi
+else
+    write_warn "python3 not found; skipping lockfile verification."
+fi
+
 # Summary
 write_header "Verification Summary"
 echo -e "${GREEN}Success: $SUCCESS_COUNT${NC}"

@@ -17,23 +17,62 @@ dependencies = [
     "jarvis-shared",
     "alembic>=1.13.1",
     "sqlalchemy>=2.0.30",
+    "psycopg2-binary>=2.9.9",
+    "cryptography>=42.0.5",
 ]
 
 [tool.uv.sources]
-jarvis-shared = { path = "../shared", editable = True }
+jarvis-shared = { path = "../shared", editable = true }
 
 [tool.uv]
 dev-dependencies = [
     "pytest>=8.2.1",
     "pytest-asyncio>=0.23.7",
+    "pytest-cov>=5.0.0",
     "ruff>=0.4.4",
     "mypy>=1.10.0",
+    "types-psycopg2-binary>=2.9.9.20240303",
 ]
 
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+extend-exclude = [".venv", "build", "dist"]
+
+[tool.ruff.lint]
+# E/W pycodestyle, F pyflakes, I isort, B bugbear, S security, C4 comprehensions,
+# UP pyupgrade, RUF ruff-specific, SIM simplify, T20 print-cleanup, RET return.
+select = [
+    "E", "F", "I", "B", "S", "C4", "UP", "RUF", "SIM", "T20", "RET",
+]
+ignore = [
+    "E501",  # line length is enforced by formatter
+    "S101",  # asserts are allowed in tests and foundation modules
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106"]
+"**/migrations/**/*.py" = ["E", "F", "I", "UP"]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
+warn_unused_ignores = true
+warn_return_any = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+plugins = []
+exclude = ["build", "dist", ".venv", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["nats.*", "qdrant_client.*", "nats_js.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-ra -q --strict-markers --cov=backend --cov=shared --cov=tools --cov-report=term-missing --cov-fail-under=70"
+pythonpath = ["."]

@@ -159,6 +159,26 @@ foreach ($port in $requiredPorts.Keys) {
     }
 }
 
+# 6. Verify Lockfiles (FND-001)
+Write-Header "Checking Lockfiles (FND-001)"
+if (Get-Command python) {
+    $lockfileOutput = & python -m tools.lockfile.verify 2>&1
+    $lockfileExit = $LASTEXITCODE
+    if ($lockfileExit -eq 0) {
+        Write-Pass "Lockfiles in sync"
+        foreach ($line in $lockfileOutput) {
+            Write-Host "       $line" -ForegroundColor Cyan
+        }
+    } else {
+        Write-Fail "Lockfiles are missing or stale." "Run: cd backend; uv lock; cd ..; pnpm install --lockfile-only"
+        foreach ($line in $lockfileOutput) {
+            Write-Host "       $line" -ForegroundColor Yellow
+        }
+    }
+} else {
+    Write-Warn "python not found; skipping lockfile verification."
+}
+
 # Summary
 Write-Header "Verification Summary"
 Write-Host "Success: $SuccessCount" -ForegroundColor Green

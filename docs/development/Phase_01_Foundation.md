@@ -110,6 +110,162 @@ Phase 01 configures:
   attempts, and metadata-only dead-letter subjects.
 - Replay authorization, reason, correlation ID, and Audit Service recording.
 
+The runtime configuration is implemented in
+`backend/core/nats_governance.py` (declarative) and `backend/core/nats.py`
+(manager). Bootstrap is idempotent and runs from the FastAPI lifespan
+when `NATS_AUTO_BOOTSTRAP=true`. See
+`docs/implementation/nats_governance.md` for the operator-facing
+companion.
+
+## CI/CD and Local Quality Commands
+
+Phase 01 ships a foundation CI workflow at
+`.github/workflows/ci.yml` with two jobs:
+
+* **foundation** — installs Python 3.12 via `astral-sh/setup-uv`,
+  runs `uv sync`, `uv run ruff check .`, `uv run mypy --strict .`,
+  and `uv run pytest ../tests -q --cov --cov-fail-under=70`,
+  plus a `gitleaks` secret scan.
+* **docker-smoke** — brings up the Compose stack, waits for the
+  healthchecks, runs `uv run python -m tools.sbom.generate --out-dir
+  build/sbom` to produce the SBOM, and tears down.
+
+`backend/pyproject.toml` is the single source of truth for Ruff
+select rules (`E,F,I,B,S,C4,UP,RUF,SIM,T20,RET`), Mypy strict,
+pytest, and the `--cov-fail-under=70` gate.
+
+`.github/dependabot.yml` keeps `pip`, `shared`, GitHub Actions, and
+Docker images current on a weekly cadence.
+
+`.gitleaks.toml` blocks JARVIS-internal credential patterns and
+common AI-provider key patterns; the `allowlist` covers
+`.env.example`, docs, and test fixtures.
+
+`tests/test_architecture_fitness.py` is a non-bypassable
+architecture-fitness test. It enforces:
+
+* domain purity (no business logic in `shared/` or repo root),
+* the 256 KiB payload-boundary consistency between
+  `NATS_MAX_PAYLOAD_BYTES` and the gateway middleware,
+* the sensitive-key surface overlap between NATS governance and
+  the payload policy,
+* NATS stream invariants (work-queue `JARVIS_COMMANDS_V1`,
+  `max_ack_pending` defaults),
+* model manifest coverage for the four locked Ollama models,
+* a plaintext-secret regex sweep across tracked files,
+* FND-001 lockfile policy, FND-003 Compose hardening,
+  FND-006 Redis/Qdrant governance, and FND-007 Ollama
+  adapter boundary.
+
+## Lockfiles and Reproducible Installs (FND-001)
+
+* `backend/uv.lock` and `pnpm-lock.yaml` are gitignored and
+  regenerated on demand.
+* The verifier at `tools/lockfile/verify.py` runs
+  `uv lock --check` and `pnpm install --frozen-lockfile`; it
+  fails the session when either lockfile is missing or stale.
+* The CI workflow and the bootstrap scripts call the verifier
+  before lint and tests. See
+  `docs/implementation/lockfile_policy.md`.
+
+## Compose Hardening (FND-003)
+
+* Loopback bindings only.
+* `depends_on.condition: service_healthy` on every
+  application service.
+* Resource limits and `stop_grace_period` on every service.
+* Restart policies: `unless-stopped` for stateful services.
+* `app` profile on the `backend` service so the foundation
+  stack can come up without launching the application.
+* See `docs/implementation/compose_operations.md` for the
+  service topology, the resource matrix, the graceful
+  shutdown policy, and the failure-mode matrix.
+
+## Redis and Qdrant Governance (FND-006)
+
+* Redis namespace `jarvis:` with a per-service prefix registry
+  (`backend/core/redis_governance.py`).
+* Key-class TTL policy: session=1h, rate-limit=1m, lock=30s,
+  ephemeral=5m, durable=24h.
+* Cache eviction policy `allkeys-lru` (Compose parity enforced
+  by the architecture fitness test).
+* Max single-key size 8 KiB; larger payloads go to PostgreSQL
+  bytea, Qdrant payload, or the filesystem.
+* Qdrant collection registry with the locked 768-d cosine
+  configuration, retention, and rebuild policy
+  (`backend/core/qdrant_governance.py`).
+* See `docs/implementation/redis_governance.md` and
+  `docs/implementation/qdrant_governance.md`.
+
+## Ollama Adapter Boundary (FND-007)
+
+* `backend/core/ollama.py` is the *only* module in the backend
+  that imports `httpx` (architecture fitness enforces this).
+* The adapter implements `ModelPort`, `EmbeddingPort`,
+  `GenerationPort`, and `VisionPort`.
+* Loopback URL guard, manifest reconciliation, bounded retry,
+  per-request timeout, and typed errors.
+* See `docs/implementation/ollama_adapter.md`.
+
+## Backup / Restore
+
+Phase 01 ships an encrypted backup proof at
+`tools/backup/` with three modules:
+
+* `crypto.py` — AES-256-GCM with PBKDF2-HMAC-SHA256 (600 000
+  iterations). The header (`HEADER_MAGIC = b"JARVISBAK\x00"`,
+  version, KDF iterations, salt, nonce) is bound to the
+  ciphertext via AES-GCM's AAD.
+* `manifest.py` — `ArtifactEntry`, `BackupManifest`, and
+  `EXCLUDED_SOURCES` covering `.env`, secrets, redis, tmp,
+  cache, `.aws`, and `.ssh`.
+* `backup.py` / `restore.py` — the operator entry points.
+  `backup.py` runs `pg_dump`, snapshots the Qdrant storage,
+  bundles user settings, encrypts the resulting tar, and
+  writes a manifest + ciphertext. `restore.py` decrypts, SHA-256
+  verifies each entry, guards against path traversal, and
+  re-applies the excluded-source rule.
+
+The recovery passphrase is held by the user
+(`JARVIS_BACKUP_PASSPHRASE`); losing it is unrecoverable by
+design. See `tools/backup/RESTORE.md` for the operator drill.
+
+## SBOM and Security Policy
+
+Phase 01 ships an SBOM generator at `tools/sbom/generate.py`. It
+emits:
+
+* `build/sbom/jarvis-sbom.cdx.json` — CycloneDX 1.5 JSON SBOM.
+* `build/sbom/jarvis-inventory.json` — flat dependency inventory.
+* `build/sbom/jarvis-licenses.json` — per-license report.
+
+The generator uses `importlib.metadata` and has no third-party
+runtime dependency beyond the standard library.
+
+`SECURITY.md` captures the supported-version policy, reporting
+procedure, trust boundaries, threat catalog, secret-management
+rules, and CI fitness gates.
+
+## Service-Owned Database Schemas
+
+Phase 01 establishes the durable persistence layer. The initial Alembic
+migration (`backend/migrations/versions/743a95f81f31_initial_foundation_setup.py`)
+creates:
+
+- The `platform` schema (extensions, `uuidv7()` generator, Alembic
+  version table).
+- Six service-owned schemas: `orchestration`, `memory`, `knowledge`,
+  `notification`, `settings`, `audit`.
+- An outbox and inbox table inside every service schema.
+- The first foundation entities: `memory.memories`,
+  `memory.consent_records`, `audit.audit_entries`,
+  `audit.audit_chain_heads`, `settings.user_settings`.
+
+Per the JDOS v1.2 architecture corrections, the foundation layer ships
+with UUIDv7 primary keys, `timestamptz` columns, optimistic-locking
+support, soft-delete support, and least-privilege role grants. See
+`docs/implementation/database_schema_foundation.md` for details.
+
 ## Exit Criteria
 
 - A new developer can start the stack from a clean checkout using documented commands.

@@ -1,53 +1,54 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+
 from backend.api.router import api_router
 from backend.core.config import settings
 from backend.core.logging import setup_logging, logger
+from backend.core.middleware import PayloadEnforcementMiddleware
 from backend.core.nats import nats_manager
-from backend.core.redis import redis_manager
 from backend.core.qdrant import qdrant_manager
+from backend.core.redis import redis_manager
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     setup_logging(settings.LOG_LEVEL)
-    logger.info("Starting JARVIS Backend", 
-                environment=settings.ENVIRONMENT,
-                project=settings.PROJECT_NAME)
-    
-    # Initialize infrastructure
+    logger.info(
+        "Starting JARVIS Backend",
+        environment=settings.ENVIRONMENT,
+        project=settings.PROJECT_NAME,
+        nats_max_payload_bytes=settings.NATS_MAX_PAYLOAD_BYTES,
+    )
+
     try:
         await nats_manager.connect()
+        if settings.NATS_AUTO_BOOTSTRAP:
+            try:
+                await nats_manager.bootstrap_governance()
+            except Exception as exc:
+                logger.error("NATS governance bootstrap failed", error=str(exc))
         await redis_manager.connect()
         await qdrant_manager.connect()
     except Exception as e:
         logger.error("Infrastructure initialization failed", error=str(e))
-        # We might want to still start but in degraded mode, 
-        # but for hardening pass we ensure they are at least attempted.
-    
+
     yield
-    
-    # Shutdown
+
     logger.info("Shutting down JARVIS Backend")
     await nats_manager.close()
     await redis_manager.close()
     await qdrant_manager.close()
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     lifespan=lifespan,
 )
 
-@app.middleware("http")
-async def sensitive_payload_policy(request: Request, call_next):
-    # Only check for POST/PUT requests which might contain payloads
-    if request.method in ["POST", "PUT"]:
-        # Validation framework hook
-        # For actual implementation, we would parse body and call validate_event_payload
-        pass
-    
-    response = await call_next(request)
-    return response
+# Add the JDOS v1.2 (Correction 5) payload policy enforcement.
+# The middleware sits in front of every route and rejects POST/PUT/PATCH
+# requests whose JSON bodies carry sensitive keys.
+app.add_middleware(PayloadEnforcementMiddleware)
 
 app.include_router(api_router, prefix="/api/v1")
 
