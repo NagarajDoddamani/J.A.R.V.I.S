@@ -19,8 +19,6 @@ The module is dependency-free in the foundation layer beyond
 
 from __future__ import annotations
 
-import json
-import os
 import secrets
 import struct
 from dataclasses import dataclass
@@ -38,7 +36,7 @@ KEY_BYTES: Final[int] = 32  # AES-256
 SALT_BYTES: Final[int] = 16
 NONCE_BYTES: Final[int] = 12  # GCM standard
 PBKDF2_ITERATIONS: Final[int] = 600_000
-HEADER_MAGIC: Final[bytes] = b"JARVISBAK\x00"
+HEADER_MAGIC: Final[bytes] = b"JARVISBAK"
 HEADER_VERSION: Final[int] = 1
 
 

@@ -1,6 +1,8 @@
 from qdrant_client import AsyncQdrantClient
+
 from backend.core.config import settings
 from backend.core.logging import logger
+
 
 class QdrantManager:
     def __init__(self):

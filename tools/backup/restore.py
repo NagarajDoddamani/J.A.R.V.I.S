@@ -27,14 +27,13 @@ import shutil
 import sys
 import tarfile
 from pathlib import Path
-from typing import Final
 
 from tools.backup.crypto import (
     BackupCryptoError,
     decrypt_backup,
     manifest_payload_sha256,
 )
-from tools.backup.manifest import EXCLUDED_SOURCES, sha256_of_bytes
+from tools.backup.manifest import EXCLUDED_SOURCES
 
 import fnmatch
 

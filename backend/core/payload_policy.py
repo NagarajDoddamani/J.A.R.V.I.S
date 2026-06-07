@@ -18,7 +18,8 @@ requires an ADR.
 
 from __future__ import annotations
 
-from typing import Any, Final, Iterable
+from collections.abc import Iterable
+from typing import Any, Final
 
 # ---------------------------------------------------------------------------
 # Sensitive keys (Correction 5)
@@ -226,9 +227,9 @@ def assert_clean_bytes(body: bytes, *, content_type: str | None) -> None:
 
 __all__ = [
     "MAX_SCANNED_BODY_BYTES",
-    "PayloadPolicyError",
     "SCANNED_CONTENT_TYPES",
     "SENSITIVE_KEYS",
+    "PayloadPolicyError",
     "assert_clean",
     "assert_clean_bytes",
     "scan_dict",

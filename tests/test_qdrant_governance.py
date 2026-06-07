@@ -140,10 +140,8 @@ def test_retention_policy_defaults() -> None:
 
 
 def test_compose_exposes_qdrant_rest_and_grpc_on_loopback() -> None:
-    compose = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-    block_start = compose.find("  qdrant:\n")
-    assert block_start != -1
-    end = compose.find("\n  ", block_start + 1)
-    block = compose[block_start:end if end != -1 else None]
+    from tests.test_helpers import service_block
+    block = service_block("qdrant")
+    assert block
     assert "6333" in block and "6334" in block
     assert "127.0.0.1:" in block

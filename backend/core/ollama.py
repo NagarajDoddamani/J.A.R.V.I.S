@@ -33,18 +33,15 @@ import base64
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Final, Optional, Protocol, runtime_checkable
+from typing import Any, Final, Protocol, runtime_checkable
 
 import httpx
-
-from backend.core.config import settings
 from tools.model_verification.manifest import (
     CANONICAL_MODELS,
     MODEL_ALIASES,
     ModelSpec,
     find_spec,
 )
-
 
 # ---------------------------------------------------------------------------
 # Public errors
@@ -87,7 +84,7 @@ class HealthReport:
 class AvailabilityReport:
     installed: bool
     alias_used: str = ""
-    spec: Optional[ModelSpec] = None
+    spec: ModelSpec | None = None
 
 
 @dataclass(frozen=True)
@@ -168,28 +165,6 @@ DEFAULT_RETRY_BASE_BACKOFF_SECONDS: Final[float] = 0.25
 DEFAULT_RETRY_MAX_BACKOFF_SECONDS: Final[float] = 8.0
 
 
-def _resolve_base_url() -> str:
-    """Resolve the Ollama base URL, enforcing loopback-only bindings.
-
-    Operators may override the URL through ``OLLAMA_BASE_URL``; we
-    refuse any URL whose host is not on the loopback interface
-    (127.0.0.0/8, ::1). This is a defense-in-depth check on top of
-    the docker-compose loopback binding.
-    """
-    raw = settings.OLLAMA_BASE_URL.rstrip("/")
-    # ``httpx`` parses URLs; use it for consistency.
-    try:
-        parsed = httpx.URL(raw)
-    except Exception as exc:  # pragma: no cover - defensive
-        raise OllamaError(f"invalid OLLAMA_BASE_URL {raw!r}: {exc}") from exc
-    host = (parsed.host or "").lower()
-    if host not in {"127.0.0.1", "localhost", "::1", "[::1]"}:
-        raise OllamaError(
-            f"OLLAMA_BASE_URL {raw!r} resolves to non-loopback host {host!r}; refusing to start"
-        )
-    return raw
-
-
 # ---------------------------------------------------------------------------
 # Adapter
 # ---------------------------------------------------------------------------
@@ -206,21 +181,31 @@ class OllamaAdapter(ModelPort, EmbeddingPort, GenerationPort, VisionPort):
     def __init__(
         self,
         *,
-        base_url: Optional[str] = None,
+        base_url: str | None = None,
         connect_timeout: float = DEFAULT_CONNECT_TIMEOUT_SECONDS,
         request_timeout: float = DEFAULT_REQUEST_TIMEOUT_SECONDS,
         retry_attempts: int = DEFAULT_RETRY_ATTEMPTS,
         retry_base_backoff: float = DEFAULT_RETRY_BASE_BACKOFF_SECONDS,
         retry_max_backoff: float = DEFAULT_RETRY_MAX_BACKOFF_SECONDS,
-        client: Optional[httpx.AsyncClient] = None,
+        client: httpx.AsyncClient | None = None,
     ) -> None:
-        self._base_url = (base_url or _resolve_base_url()).rstrip("/")
+        raw = (base_url or "http://127.0.0.1:11434").rstrip("/")
+        try:
+            parsed = httpx.URL(raw)
+        except Exception as exc:
+            raise OllamaError(f"invalid OLLAMA_BASE_URL {raw!r}: {exc}") from exc
+        host = (parsed.host or "").lower()
+        if host not in {"127.0.0.1", "localhost", "::1", "[::1]"}:
+            raise OllamaError(
+                f"OLLAMA_BASE_URL {raw!r} resolves to non-loopback host {host!r}; refusing to start"
+            )
+        self._base_url = raw
         self._connect_timeout = connect_timeout
         self._request_timeout = request_timeout
         self._retry_attempts = max(1, retry_attempts)
         self._retry_base_backoff = retry_base_backoff
         self._retry_max_backoff = retry_max_backoff
-        self._client: Optional[httpx.AsyncClient] = client
+        self._client: httpx.AsyncClient | None = client
         self._owns_client = client is None
 
     # ------------------------------------------------------------------
@@ -240,7 +225,7 @@ class OllamaAdapter(ModelPort, EmbeddingPort, GenerationPort, VisionPort):
             await self._client.aclose()
             self._client = None
 
-    async def __aenter__(self) -> "OllamaAdapter":
+    async def __aenter__(self) -> OllamaAdapter:
         await self._get_client()
         return self
 
@@ -282,14 +267,15 @@ class OllamaAdapter(ModelPort, EmbeddingPort, GenerationPort, VisionPort):
     async def _with_retry(self, op_name: str, coro_factory: Any) -> Any:
         """Execute ``coro_factory()`` with bounded retry on transient errors.
 
-        Retries cover connection failures and 5xx responses. The
-        caller is expected to have already validated the request.
+        Retries cover connection failures, timeouts, and server
+        (5xx) responses. The caller is expected to have already
+        validated the request.
         """
-        last_exc: Optional[BaseException] = None
+        last_exc: BaseException | None = None
         for attempt in range(1, self._retry_attempts + 1):
             try:
                 return await coro_factory()
-            except (httpx.ConnectError, httpx.ReadError, httpx.WriteError, httpx.PoolTimeout) as exc:
+            except (OllamaConnectionError, OllamaTimeoutError) as exc:
                 last_exc = exc
                 if attempt == self._retry_attempts:
                     break
@@ -298,22 +284,21 @@ class OllamaAdapter(ModelPort, EmbeddingPort, GenerationPort, VisionPort):
                     self._retry_base_backoff * (2 ** (attempt - 1)),
                 )
                 await asyncio.sleep(backoff)
-            except httpx.TimeoutException as exc:
-                last_exc = exc
-                if attempt == self._retry_attempts:
-                    raise OllamaTimeoutError(
-                        f"{op_name} timed out after {self._retry_attempts} attempts"
-                    ) from exc
-                await asyncio.sleep(
-                    min(self._retry_max_backoff, self._retry_base_backoff * (2 ** (attempt - 1)))
-                )
             except OllamaError:
                 raise
             except Exception:
                 raise
+        if isinstance(last_exc, (OllamaConnectionError,)):
+            raise OllamaConnectionError(
+                f"{op_name} failed after {self._retry_attempts} attempts: {last_exc}"
+            ) from last_exc
+        if isinstance(last_exc, OllamaTimeoutError):
+            raise OllamaTimeoutError(
+                f"{op_name} timed out after {self._retry_attempts} attempts: {last_exc}"
+            ) from last_exc
         raise OllamaConnectionError(
             f"{op_name} failed after {self._retry_attempts} attempts: {last_exc}"
-        ) from last_exc
+        ) from last_exc if last_exc else None
 
     # ------------------------------------------------------------------
     # ModelPort
@@ -332,7 +317,7 @@ class OllamaAdapter(ModelPort, EmbeddingPort, GenerationPort, VisionPort):
             except httpx.TimeoutException as exc:
                 raise OllamaTimeoutError(f"health check timed out: {exc}") from exc
             if response.status_code >= 500:
-                raise OllamaResponseError(
+                raise OllamaConnectionError(
                     f"health check returned {response.status_code}: {response.text}"
                 )
             version = ""
@@ -511,7 +496,7 @@ class OllamaAdapter(ModelPort, EmbeddingPort, GenerationPort, VisionPort):
 # ---------------------------------------------------------------------------
 
 
-_ADAPTER: Optional[OllamaAdapter] = None
+_ADAPTER: OllamaAdapter | None = None
 
 
 def get_ollama_adapter() -> OllamaAdapter:
@@ -537,12 +522,12 @@ async def close_ollama_adapter() -> None:
 
 
 __all__ = [
-    "AvailabilityReport",
     "DEFAULT_CONNECT_TIMEOUT_SECONDS",
+    "DEFAULT_REQUEST_TIMEOUT_SECONDS",
     "DEFAULT_RETRY_ATTEMPTS",
     "DEFAULT_RETRY_BASE_BACKOFF_SECONDS",
     "DEFAULT_RETRY_MAX_BACKOFF_SECONDS",
-    "DEFAULT_REQUEST_TIMEOUT_SECONDS",
+    "AvailabilityReport",
     "EmbeddingPort",
     "EmbeddingResult",
     "GenerationPort",

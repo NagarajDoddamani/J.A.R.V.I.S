@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends
-from backend.core.config import settings
-from backend.core.nats import NatsManager, nats_manager
-from backend.core.redis import RedisManager, redis_manager
-from backend.core.qdrant import QdrantManager, qdrant_manager
-from backend.core.logging import logger
 import asyncio
 import time
+
+from fastapi import APIRouter, Depends
+
+from backend.core.logging import logger
+from backend.core.nats import NatsManager, nats_manager
+from backend.core.qdrant import QdrantManager, qdrant_manager
+from backend.core.redis import RedisManager, redis_manager
 
 router = APIRouter()
 
@@ -42,7 +43,7 @@ async def health_check(
             # FIX-13: Increase timeout strategy and implementation of grace period
             is_up = await asyncio.wait_for(manager.is_healthy(), timeout=2.0)
             return name, "up" if is_up else "down"
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Health check timeout for {name}", service=name)
             return name, "timeout"
         except Exception as e:

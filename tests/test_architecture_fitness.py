@@ -34,6 +34,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from tests.test_helpers import (  # noqa: E402
+    service_block,
+)
+
 from backend.core.nats_governance import (  # noqa: E402
     COMMAND_CONSUMER_SPECS,
     NATS_MAX_PAYLOAD_BYTES,
@@ -107,7 +111,7 @@ def test_domain_does_not_import_adapter_frameworks() -> None:
     that imports an adapter framework fails this test."""
     offenders: list[tuple[Path, str]] = []
     for path in _iter_python_files():
-        rel = str(path.relative_to(REPO_ROOT)).replace("\\", "/")
+        str(path.relative_to(REPO_ROOT)).replace("\\", "/")
         if _is_allowed(path):
             continue
         try:
@@ -353,33 +357,24 @@ def test_workspace_packages_have_package_json() -> None:
 
 @pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats", "ollama"))
 def test_compose_loopback_only(service: str) -> None:
-    compose = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-    block_start = compose.find(f"  {service}:\n")
-    assert block_start != -1, f"service {service!r} missing"
-    end = compose.find("\n  ", block_start + 1)
-    block = compose[block_start:end if end != -1 else None]
+    block = service_block(service)
+    assert block, f"service {service!r} missing"
     assert "127.0.0.1:" in block
     assert "0.0.0.0" not in block
 
 
 @pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats", "ollama"))
 def test_compose_healthcheck_present(service: str) -> None:
-    compose = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-    block_start = compose.find(f"  {service}:\n")
-    assert block_start != -1
-    end = compose.find("\n  ", block_start + 1)
-    block = compose[block_start:end if end != -1 else None]
+    block = service_block(service)
+    assert block, f"service {service!r} missing"
     assert "healthcheck:" in block
     assert "test:" in block
 
 
 @pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats", "ollama"))
 def test_compose_resource_limits_present(service: str) -> None:
-    compose = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-    block_start = compose.find(f"  {service}:\n")
-    assert block_start != -1
-    end = compose.find("\n  ", block_start + 1)
-    block = compose[block_start:end if end != -1 else None]
+    block = service_block(service)
+    assert block, f"service {service!r} missing"
     assert "deploy:" in block
     assert "resources:" in block
     assert "limits:" in block
@@ -388,11 +383,8 @@ def test_compose_resource_limits_present(service: str) -> None:
 
 
 def test_compose_backend_uses_healthy_dependencies() -> None:
-    compose = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
-    assert "  backend:" in compose
-    block_start = compose.find("  backend:\n")
-    end = compose.find("\n  ", block_start + 1)
-    block = compose[block_start:end if end != -1 else None]
+    block = service_block("backend")
+    assert block
     assert "depends_on:" in block
     assert "condition: service_healthy" in block
 

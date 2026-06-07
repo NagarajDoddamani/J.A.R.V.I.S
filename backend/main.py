@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from backend.api.router import api_router
 from backend.core.config import settings
-from backend.core.logging import setup_logging, logger
+from backend.core.logging import logger, setup_logging
 from backend.core.middleware import PayloadEnforcementMiddleware
 from backend.core.nats import nats_manager
 from backend.core.qdrant import qdrant_manager
@@ -62,5 +63,5 @@ if __name__ == "__main__":
         "main:app",
         host=settings.API_HOST,
         port=settings.API_PORT,
-        reload=True if settings.ENVIRONMENT == "development" else False
+        reload=settings.ENVIRONMENT == "development"
     )

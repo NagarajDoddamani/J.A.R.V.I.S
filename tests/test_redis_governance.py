@@ -137,9 +137,10 @@ def test_compose_maxmemory_policy_matches_governance() -> None:
     # Extract the policy value.
     for line in compose.splitlines():
         if "--maxmemory-policy" in line:
-            parts = line.split("--maxmemory-policy", 1)[1].strip().split()
-            assert parts, "maxmemory-policy value missing"
-            policy = parts[0].rstrip(",")
+            import re as _re
+            m = _re.search(r'--maxmemory-policy[=\s"\',]+(\w[\w-]*)', line)
+            assert m, "maxmemory-policy value missing"
+            policy = m.group(1)
             assert is_eviction_policy_compatible(policy), (
                 f"Compose maxmemory-policy {policy!r} does not match governance "
                 f"expected {EXPECTED_EVICTION_POLICY.value!r}"

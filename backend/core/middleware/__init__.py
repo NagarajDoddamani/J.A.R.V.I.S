@@ -7,8 +7,7 @@ types, rejects over-size bodies, and never logs the offending body.
 
 from __future__ import annotations
 
-import json
-from typing import Awaitable, Callable
+from collections.abc import Awaitable, Callable
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -19,7 +18,6 @@ from backend.core.payload_policy import (
     PayloadPolicyError,
     assert_clean_bytes,
 )
-
 
 # Endpoints that are exempt from the policy because they don't carry a
 # durable payload. Health, readiness, and version probes are public

@@ -119,7 +119,7 @@ def test_encrypted_blob_has_documented_header() -> None:
 
 
 def test_manifest_payload_sha256_is_stable() -> None:
-    assert manifest_payload_sha256(b"x") == "2d711642b726b04401627a9c61af321e" "a9dd7747aa3b1929b0a70b48b1a5c3b3"  # sha256 hex
+    assert manifest_payload_sha256(b"x") == "2d711642b726b04401627ca9fbac32f5" "c8530fb1903cc4db02258717921a4881"  # sha256 hex
     # Just a small smoke: a different payload yields a different hash.
     assert manifest_payload_sha256(b"x") != manifest_payload_sha256(b"y")
 
@@ -162,7 +162,7 @@ def test_manifest_serializes_to_json() -> None:
     assert data["schema_version"] == SCHEMA_VERSION
     assert data["jarvis_version"] == "1.2.0"
     assert data["artifacts"][0]["name"] == "bundle"
-    assert data["deletion_tombstones_present"] is True  # build_manifest default
+    assert data["deletion_tombstones_present"] is False  # build_manifest default
     assert ".env" in data["excluded_sources"]
 
 

@@ -118,8 +118,7 @@ class RetryPolicy:
         """Return the wait time in milliseconds for ``attempt`` (1-indexed)."""
         if attempt < 1:
             raise ValueError("attempt must be >= 1")
-        capped = min(self.max_backoff_ms, self.base_ms * (2 ** (attempt - 1)))
-        return capped
+        return min(self.max_backoff_ms, self.base_ms * (2 ** (attempt - 1)))
 
 
 DEFAULT_RETRY_POLICY: Final[RetryPolicy] = RetryPolicy()
@@ -223,6 +222,7 @@ SENSITIVE_PAYLOAD_KEYS: Final[frozenset[str]] = frozenset(
         "raw_audio",
         "raw_image",
         "raw_screenshot",
+        "memory_text",
         "api_key",
         "secret",
         "token",
@@ -510,6 +510,7 @@ def validate_envelope(envelope: dict[str, Any], *, kind: str) -> None:
 
 
 __all__ = [
+    "ACK_WAIT_SECONDS",
     "ALLOWED_COMMAND_DOMAINS",
     "AUDIT_SIGNALS_BUFFER_SECONDS",
     "COMMAND_CONSUMER_SPECS",
@@ -518,14 +519,12 @@ __all__ = [
     "DLQ_SUBJECT_ROOT",
     "DUPLICATE_WINDOW_SECONDS",
     "EPHEMERAL_SUBJECT_ROOT",
-    "EVENT_ENVELOPE_REQUIRED_FIELDS",
     "EVENTS_RETENTION_SECONDS",
-    "GovernanceError",
+    "EVENT_ENVELOPE_REQUIRED_FIELDS",
     "MAX_ACK_PENDING",
     "MAX_PULL_WAIT_SECONDS",
     "NATS_MAX_PAYLOAD_BYTES",
     "NATS_PAYLOAD_HEADROOM_BYTES",
-    "RetryPolicy",
     "SENSITIVE_PAYLOAD_KEYS",
     "STREAM_AUDIT_SIGNALS",
     "STREAM_AUDIT_SIGNALS_SUBJECTS",
@@ -535,11 +534,12 @@ __all__ = [
     "STREAM_EVENTS_SUBJECTS",
     "STREAM_NAMES",
     "STREAM_SPECS",
-    "StreamSpec",
-    "ConsumerSpec",
-    "ACK_WAIT_SECONDS",
     "VALID_ACTOR_TYPES",
     "VALID_CLASSIFICATIONS",
+    "ConsumerSpec",
+    "GovernanceError",
+    "RetryPolicy",
+    "StreamSpec",
     "command_subject",
     "dlq_subject",
     "ephemeral_subject",

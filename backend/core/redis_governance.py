@@ -20,9 +20,8 @@ the prefix registry.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Final
-
 
 # ---------------------------------------------------------------------------
 # Namespace + key-prefix registry
@@ -32,7 +31,7 @@ REDIS_NAMESPACE: Final[str] = "jarvis"
 KEY_SEPARATOR: Final[str] = ":"
 
 
-class ServicePrefix(str, Enum):
+class ServicePrefix(StrEnum):
     """Authoritative per-service Redis key prefix.
 
     A service MUST use the prefix assigned to it here. New
@@ -71,7 +70,7 @@ def namespaced_key(prefix: ServicePrefix, *parts: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-class KeyClass(str, Enum):
+class KeyClass(StrEnum):
     """Classes of Redis key with distinct lifetime rules."""
 
     SESSION = "session"           # user session
@@ -119,7 +118,7 @@ def ttl_for(key_class: KeyClass) -> int:
 # ---------------------------------------------------------------------------
 
 
-class EvictionPolicy(str, Enum):
+class EvictionPolicy(StrEnum):
     """Cache eviction policy declared in the docker-compose contract.
 
     The Compose file sets ``maxmemory-policy allkeys-lru``; the
@@ -154,11 +153,15 @@ def is_valid_key(key: str) -> bool:
     """Return ``True`` when ``key`` is a properly namespaced JARVIS key.
 
     A key is valid when it starts with one of the registered
-    prefixes. The function is used by the architecture fitness
-    test to gate dynamic key construction.
+    prefixes, or when it exactly equals the prefix minus the trailing
+    separator (the bare namespace). The function is used by the
+    architecture fitness test to gate dynamic key construction.
     """
     for prefix in PREFIX_REGISTRY.values():
         if key.startswith(prefix):
+            return True
+        bare = prefix.rstrip(KEY_SEPARATOR)
+        if key == bare:
             return True
     return False
 

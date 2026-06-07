@@ -1,6 +1,8 @@
 import redis.asyncio as redis
+
 from backend.core.config import settings
 from backend.core.logging import logger
+
 
 class RedisManager:
     def __init__(self):

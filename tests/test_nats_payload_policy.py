@@ -30,7 +30,7 @@ from backend.core.nats_governance import (  # noqa: E402
 def _envelope_with_payload(payload: dict) -> dict:
     return {
         "command_id": "01975c2f-51c0-7781-b801-28af3bd9fa24",
-        "command_type": "CREATE_MEMORY_COMMAND",
+        "command_type": "jarvis.command.memory.create.v1",
         "command_version": 1,
         "issued_at": "2026-06-07T06:30:00Z",
         "expires_at": "2026-06-07T06:31:00Z",

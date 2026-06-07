@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-06-07T18:18:59.594237+00:00",
+  "ollama_url": "http://127.0.0.1:11434",
+  "offline": false,
+  "smoke_attempted": 1,
+  "smoke_passed": 0,
+  "smoke_failed": 1,
+  "missing_models": [
+    "Qwen Coder",
+    "Qwen2.5-VL"
+  ],
+  "unsupported_models": [],
+  "all_passed": false,
+  "checks": [
+    {
+      "canonical_name": "Qwen 3 8B",
+      "ollama_name": "qwen3",
+      "expected_tag": "8b",
+      "installed": true,
+      "installed_name": "qwen3:8b",
+      "installed_tag": "8b",
+      "digest_match": null,
+      "smoke_inference": null,
+      "smoke_status": "failed",
+      "smoke_error": "empty response",
+      "notes": []
+    },
+    {
+      "canonical_name": "Qwen Coder",
+      "ollama_name": "qwen-coder",
+      "expected_tag": "latest",
+      "installed": false,
+      "installed_name": null,
+      "installed_tag": null,
+      "digest_match": null,
+      "smoke_inference": null,
+      "smoke_status": "skipped",
+      "smoke_error": null,
+      "notes": [
+        "model is not installed"
+      ]
+    },
+    {
+      "canonical_name": "Qwen2.5-VL",
+      "ollama_name": "qwen2.5-vl",
+      "expected_tag": "latest",
+      "installed": false,
+      "installed_name": null,
+      "installed_tag": null,
+      "digest_match": null,
+      "smoke_inference": null,
+      "smoke_status": "skipped",
+      "smoke_error": null,
+      "notes": [
+        "model is not installed"
+      ]
+    },
+    {
+      "canonical_name": "nomic-embed-text",
+      "ollama_name": "nomic-embed-text",
+      "expected_tag": "latest",
+      "installed": true,
+      "installed_name": "nomic-embed-text:latest",
+      "installed_tag": "latest",
+      "digest_match": null,
+      "smoke_inference": "no chat-style smoke for embed model",
+      "smoke_status": "skipped",
+      "smoke_error": null,
+      "notes": []
+    }
+  ]
+}

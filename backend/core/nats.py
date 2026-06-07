@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import random
-from typing import Any, Optional
+from typing import Any
 
 import nats
 from nats.aio.client import Client as NatsClient
@@ -34,10 +34,10 @@ from backend.core.logging import logger
 from backend.core.nats_governance import (
     COMMAND_CONSUMER_SPECS,
     DEFAULT_RETRY_POLICY,
-    GovernanceError,
     STREAM_NAMES,
     STREAM_SPECS,
     ConsumerSpec,
+    GovernanceError,
     RetryPolicy,
     StreamSpec,
     validate_envelope,
@@ -92,8 +92,8 @@ class NatsManager:
     """Connection + governance bootstrap for the local NATS cluster."""
 
     def __init__(self) -> None:
-        self.nc: Optional[NatsClient] = None
-        self.js: Optional[JetStreamContext] = None
+        self.nc: NatsClient | None = None
+        self.js: JetStreamContext | None = None
         self._connected = False
         self._bootstrap_complete = False
 
@@ -300,7 +300,7 @@ async def get_jetstream_context() -> JetStreamContext:
 # Re-export public surface for downstream consumers
 __all__ = [
     "backoff_ms",
-    "nats_manager",
-    "get_nats_client",
     "get_jetstream_context",
+    "get_nats_client",
+    "nats_manager",
 ]

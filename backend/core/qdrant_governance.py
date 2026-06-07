@@ -20,16 +20,15 @@ an out-of-policy collection.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from typing import Final
-
 
 # ---------------------------------------------------------------------------
 # Distance + embedding configuration
 # ---------------------------------------------------------------------------
 
 
-class DistanceMetric(str, Enum):
+class DistanceMetric(StrEnum):
     COSINE = "Cosine"
     DOT = "Dot"
     EUCLID = "Euclid"
@@ -50,7 +49,7 @@ EXPECTED_VECTOR_SIZE: Final[int] = NOMIC_EMBED_TEXT_VECTOR_SIZE
 # ---------------------------------------------------------------------------
 
 
-class QdrantCollection(str, Enum):
+class QdrantCollection(StrEnum):
     """Authoritative Qdrant collection registry.
 
     Adding a collection requires an ADR; tests pin the registry

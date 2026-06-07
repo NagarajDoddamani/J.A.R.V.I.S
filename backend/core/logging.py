@@ -1,6 +1,8 @@
 import logging
 import sys
+
 import structlog
+
 
 def setup_logging(log_level: str = "INFO"):
     shared_processors = [
@@ -19,9 +21,7 @@ def setup_logging(log_level: str = "INFO"):
     ]
 
     structlog.configure(
-        processors=shared_processors + [
-            structlog.dev.ConsoleRenderer() if sys.stderr.isatty() else structlog.processors.JSONRenderer()
-        ],
+        processors=[*shared_processors, structlog.dev.ConsoleRenderer() if sys.stderr.isatty() else structlog.processors.JSONRenderer()],
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),
         wrapper_class=structlog.make_filtering_bound_logger(logging.getLevelName(log_level)),

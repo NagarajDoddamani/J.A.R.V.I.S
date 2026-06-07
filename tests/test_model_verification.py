@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -149,12 +150,9 @@ def _patch_offline(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_verify_reports_missing_models(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch_offline(monkeypatch)
     # Empty Ollama install
-    transport = httpx.MockTransport(lambda req: _ok_response(_make_manager_payload([])))
-    monkeypatch.setattr(httpx.AsyncClient, "send", lambda self, *a, **kw: transport.handle_request(*a, **kw))
-    # The transport needs a different attachment point. Replace the
-    # underlying httpx.AsyncClient transport.
     import httpx as _httpx
 
+    transport = httpx.MockTransport(lambda req: _ok_response(_make_manager_payload([])))
     orig_init = _httpx.AsyncClient.__init__
 
     def _init(self, *args, **kwargs):

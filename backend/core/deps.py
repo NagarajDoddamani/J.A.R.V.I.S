@@ -1,7 +1,7 @@
-from typing import AsyncGenerator
 from backend.core.nats import nats_manager
-from backend.core.redis import redis_manager
 from backend.core.qdrant import qdrant_manager
+from backend.core.redis import redis_manager
+
 
 async def get_nats_client():
     return nats_manager.nc

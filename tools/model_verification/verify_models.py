@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import asyncio
 import datetime as _dt
-import hashlib
 import json
 import os
 import sys
@@ -120,8 +119,10 @@ async def _show_model(client: httpx.AsyncClient, name: str) -> Optional[dict[str
     return response.json()
 
 
-def _digest_of(show_payload: dict[str, Any]) -> Optional[str]:
+def _digest_of(show_payload: Optional[dict[str, Any]]) -> Optional[str]:
     """Extract a sha256 digest string from /api/show if present."""
+    if show_payload is None:
+        return None
     details = show_payload.get("details") or {}
     for key in ("sha256", "digest", "model_sha256"):
         value = details.get(key)

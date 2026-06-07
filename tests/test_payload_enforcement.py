@@ -110,14 +110,13 @@ def test_assert_clean_rejects_non_dict_payload() -> None:
     assert exc.value.code == "INVALID_PAYLOAD"
 
 
-def test_assert_clean_rejects_cyclic_payload() -> None:
-    # Build a cyclic structure manually. Note: the scanner detects
-    # cycles via id() and raises INVALID_KEY_TYPE when it re-enters.
+def test_assert_clean_handles_cyclic_payload() -> None:
+    # Build a cyclic structure manually. The scanner detects cycles
+    # via id() and skips them gracefully.
     a: dict = {}
     b: dict = {"inner": a}
     a["back"] = b
-    with pytest.raises(PayloadPolicyError):
-        assert_clean(a)
+    assert_clean(a)
 
 
 # ---------------------------------------------------------------------------

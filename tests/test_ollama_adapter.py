@@ -30,7 +30,6 @@ from backend.core.ollama import (  # noqa: E402
     OllamaConnectionError,
     OllamaError,
     OllamaResponseError,
-    OllamaTimeoutError,
     OllamaUnsupportedModelError,
     VisionResult,
 )
