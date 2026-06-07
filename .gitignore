@@ -1,0 +1,36 @@
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+dist/
+build/
+.pnpm-debug.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.python-version
+.uv/
+
+# Environment
+.env
+.env.local
+
+# Docker
+.docker/
+volumes/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# JARVIS specific
+logs/
+data/

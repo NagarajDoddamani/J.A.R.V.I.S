@@ -1,0 +1,20 @@
+{
+  "name": "jarvis-monorepo",
+  "private": true,
+  "description": "JARVIS: Private AI Operating Environment",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "infra:up": "docker-compose up -d",
+    "infra:down": "docker-compose down",
+    "infra:status": "docker-compose ps",
+    "infra:logs": "docker-compose logs -f",
+    "backend:dev": "cd backend && uv run uvicorn main:app --reload",
+    "lint": "pnpm -r run lint",
+    "test": "pnpm -r run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
