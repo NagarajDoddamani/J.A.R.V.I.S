@@ -1,0 +1,11 @@
+[project]
+name = "jarvis-shared"
+version = "0.1.0"
+description = "JARVIS Shared Schemas and Utilities"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.0.0",
+]
+
+[tool.uv]
+package = true

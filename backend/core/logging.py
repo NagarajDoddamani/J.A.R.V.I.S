@@ -6,8 +6,16 @@ def setup_logging(log_level: str = "INFO"):
     shared_processors = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
+        structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
         structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.CallsiteParameterAdder(
+            {
+                structlog.processors.CallsiteParameter.FILENAME,
+                structlog.processors.CallsiteParameter.FUNC_NAME,
+                structlog.processors.CallsiteParameter.LINENO,
+            }
+        ),
     ]
 
     structlog.configure(
