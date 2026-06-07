@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -109,7 +109,7 @@ jobs:
       docker:
         image: docker:24-dind
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Compose up
         run: docker compose up -d
       - name: Health checks
