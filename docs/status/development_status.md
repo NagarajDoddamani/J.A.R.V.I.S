@@ -3,24 +3,20 @@
 **JDOS version:** 1.2  
 **Last updated:** 2026-06-09  
 **Updated by:** AI Agent  
-**Repository state:** SVC-001 Audit Service fully validated (229 tests).
-SVC-002-A Settings Domain layer implemented (107 tests). 381 total
-tests pass (45 architecture + 107 settings + 229 audit).
-Phase 01 exit gate remains open.
+**Repository state:** SVC-001 complete. SVC-002 fully complete (A–G).
+1038 total tests pass (48 architecture + 501 settings + 229 audit +
+263 foundation). Phase 01 exit gate remains open.
 
 ## Current Phase
 
-**Phase 02: Core Services — Step 3: SVC-002-A Settings Domain (In Progress)**
+**Phase 02: Core Services — Step completed: SVC-002-G Settings
+Service Integration & Final Verification**
 
-The Settings Service domain layer (SVC-002-A) has been implemented
-following the same hexagonal patterns as SVC-001:
-
-- **SVC-002-A Domain** (107 tests): `SettingsProfile` aggregate root,
-  `Setting` value object, `SettingDefinition` schema, `SettingCategory`
-  (6 categories), `SettingScope`, `Version`. `SettingsProfileFactory`
-  creates validated profiles with defaults. 12 domain rules (key format,
-  type validation, bounds, max length, allowed values, safety floor,
-  reserved keys). Domain events: `SettingUpdated`, `SettingsReset`.
+Settings Service is certified **SETTINGS_SERVICE_COMPLETE**. All
+501 settings-specific tests pass, full architecture compliance
+confirmed, no open defects. Completion report in
+`docs/status/settings_service_completion_report.md`.  
+Next step: SVC-001 outbox publisher hardening.
 
 The Audit Service (SVC-001) has been fully implemented across all six
 hexagonal architecture layers:
@@ -148,27 +144,37 @@ hexagonal architecture layers:
   (prompt, raw memory, document, embedding, secret) over HTTP
   and over `nats_manager.publish()`, plus cycle-safe
   traversal, the 256 KiB oversize case, and exempt paths.
+- **SVC-002-F Settings Bootstrap** — FastAPI routes (5 endpoints:
+  `GET /settings`, `GET /settings/{key}`, `PATCH /settings/{key}`,
+  `PATCH /settings`, `POST /settings/reset`), DI wiring with
+  `DEFAULT_REGISTRY` (20 setting definitions across 6 categories),
+  NATS outbox publisher (`publish_settings_outbox_events` with poll–
+  publish–mark loop, `max_iterations`, graceful cancellation). Clock
+  and ID generator adapters created. Tests: 76 new (bootstrap + API +
+  NATS). 937 total tests pass.
+- **SVC-002-G Settings Integration & Final Verification** — End-to-end
+  lifecycle verification (create→patch→query→reset→publish→mark),
+  repository roundtrip (Domain→DTO→ORM→DB→ORM→DTO→Domain) with no data
+  loss, event flow validation (SettingUpdated/SettingsReset through
+  outbox→NATS payload→published marker, FIFO preservation), REST
+  contract verification (all 5 routes, status codes, DTO shapes,
+  validation errors, cross-profile isolation), architecture compliance
+  (layer isolation, import barriers), and registry audit (20 keys,
+  6 categories, type/bounds/allowed-values consistency). Tests: 101 new
+  (integration + service closure). 1038 total tests pass. Completion
+  report: `docs/status/settings_service_completion_report.md`.
 
 ## Pending Tasks
 
-1. **SVC-002-B Settings Ports** — Port protocols for repository, cache,
-   event publisher.
-2. **SVC-002-C Persistence Contracts** — Storage DTOs, mapper protocols,
-   schema contracts for `settings` schema.
-3. **SVC-002-D Use Cases** — GetSettings, PatchSettings, ResetSettings,
-   GetSettingByKey use cases.
-4. **SVC-002-E Adapters** — SQLAlchemy ORM models, mapper impls,
-   repository impls.
-5. **SVC-002-F Service Bootstrap** — FastAPI routes, DI wiring.
-6. **SVC-001 outbox publisher hardening** — Governance envelope validation
+1. **SVC-001 outbox publisher hardening** — Governance envelope validation
    (use `nats_manager.publish()`), retry budget, DLQ routing,
    graceful NATS disconnect handling, ACK tracking.
-7. Run the Phase 01 Compose stack end-to-end and capture
+2. Run the Phase 01 Compose stack end-to-end and capture
    evidence for the exit gate (NATS replay, in-VM message
    size, model verification live, backup round-trip, payload
    fixture suite, lockfile parity).
-8. Production grant pattern for the per-service roles.
-9. Pin exact production image versions.
+3. Production grant pattern for the per-service roles.
+4. Pin exact production image versions.
 
 ## Known Issues
 
@@ -211,6 +217,13 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 | ID | Task | Status | Tests |
 |---|---|---|---|
 | SVC-002-A | Domain model, value objects, factory, rules, events | Done | 107 |
+| SVC-002-B | Port protocols (repository, outbox, clock, id gen) | Done | 43 |
+| SVC-002-C | Persistence DTOs, mapper protocols, schema contracts | Done | 65 |
+| SVC-002-D | Use cases (get, patch, reset, get-by-key) | Done | 55 |
+| SVC-002-E | Adapters (mappers, models, repository, outbox) | Done | 54 |
+| SVC-002-F | Bootstrap (FastAPI routes, DI wiring, NATS publisher) | Done | 76 |
+| SVC-002-G | Integration & final verification | Done | 101 |
+| **Total** | | | **501** |
 
 ## SVC-001 Audit Service Status
 
@@ -228,88 +241,72 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 
 ### Objective
 
-Implement SVC-002-A Settings Service domain layer following the same
-hexagonal architecture and quality standards established by SVC-001 Audit.
-Domain layer only — no ports, no persistence, no infrastructure.
+Implement SVC-002-G Settings Service Integration & Final Verification:
+end-to-end lifecycle, repository roundtrip, event flow, REST contract
+verification, architecture compliance, and service closure report.
 
 ### Completed
 
-- **SVC-002-A Settings Domain** (107 tests):
-  - `backend/settings/domain/model.py` — Value objects: `SettingId` (UUID),
-    `Version` (major.minor), `SettingCategory` (6-category StrEnum),
-    `SettingScope` (user/system/service StrEnum), `SettingDefinition`
-    (schema with key/category/scope/type/defaults/bounds/safety_floor),
-    `Setting` (key-value pair). Aggregate root: `SettingsProfile` with
-    `get()`, `has_key()`, `get_all_in_category()`, `apply_setting()`,
-    `apply_patch()`, `reset_to_defaults()`. Domain events: `SettingUpdated`,
-    `SettingsReset`.
-  - `backend/settings/domain/exceptions.py` — 14 typed exceptions:
-    `SettingsDomainError`, `InvalidSettingKeyError`, `UnknownSettingKeyError`,
-    `InvalidSettingValueError`, `InvalidSettingCategoryError`,
-    `InvalidSettingScopeError`, `SafetyFloorViolationError`,
-    `ReservedSettingKeyError`, `SchemaVersionMismatchError`,
-    `InvalidVersionError`, `SettingTypeMismatchError`, `SettingBoundsError`,
-    `SettingMaxLengthError`, `SettingAllowedValuesError`,
-    `DuplicateSettingKeyError`.
-  - `backend/settings/domain/rules.py` — 12 validation rules:
-    `assert_key_format` (regex `[a-z_]+(\.[a-z_]+)*`), `assert_key_known`,
-    `assert_key_not_reserved`, `assert_category_valid`, `assert_scope_valid`,
-    `assert_version_valid`, `assert_value_type` (bool/int/float/str/list/dict),
-    `assert_value_not_exceeds_max_length`, `assert_value_in_bounds`,
-    `assert_value_in_allowed`, `assert_safety_floor` (min value + boolean
-    default floor), `validate_setting_value` (composite).
-  - `backend/settings/domain/factory.py` — `SettingsProfileFactory.create()`
-    builds a validated profile with defaults from a definition registry.
-  - Canonical default registry with 19 settings across 6 categories:
-    3 System (language, timezone, auto_start), 3 Privacy (history_retention,
-    analytics, consent_required [reserved]), 5 Voice (wake_word, mic,
-    retain_audio, tts_enabled, tts_speed), 3 Notification (sounds_enabled,
-    quiet_hours_start/end), 3 Model (temperature, top_p, max_tokens),
-    2 UI (theme, reduced_motion).
+- **`tests/test_settings_integration.py`** (76 tests):
+  - **Full lifecycle**: `SettingsProfileFactory.create()` → patch settings →
+    query → query by key → reset category → reset all → publish events →
+    outbox marked published. 100% success.
+  - **Repository roundtrip**: Domain → DTO → ORM → Database → ORM → DTO →
+    Domain with no data loss. Profile id, version, key, value, category,
+    scope all preserved. Value types (bool/int/float/str) survive storage.
+    Category and scope match definitions after roundtrip.
+  - **Event flow**: `SettingUpdated` and `SettingsReset` flow through
+    outbox → publisher → NATS payload → published marker. FIFO order
+    preserved. NATS envelope contains `event_id`, `event_type`, `kind`,
+    `subject`, `producer`, `profile_id`, `occurred_at`, and event-specific
+    fields (`key`, `old_value`, `new_value`, `category` / `previous_count`).
+    Mark-published is idempotent.
+  - **REST contracts** (6 classes, 39 tests): All 5 routes verified for
+    status codes (200/400/404/422), DTO shape, validation errors, error
+    responses, method not allowed, cross-profile isolation.
+- **`tests/test_settings_service_closure.py`** (25 tests):
+  - **Layer isolation**: Domain, ports, persistence, and use case packages
+    import no adapter frameworks (fastapi/sqlalchemy/nats/httpx/redis/qdrant).
+  - **Registry audit**: 20 keys across 6 categories, valid key format,
+    value types match defaults, bounds consistency, allowed-values validity,
+    reserved keys are SYSTEM scope, key-definition consistency.
+  - **Module import verification**: All 23 modules import without error.
+  - **Use-case constructor contracts**: Each use case accepts only port
+    dependencies (repo/outbox/clock/registry), no adapter impls.
+  - **Domain event completeness**: Both event types handled by outbox.
+  - **Category coverage**: Every `SettingCategory` has ≥2 definitions.
+- **`docs/status/settings_service_completion_report.md`** — Full service
+  closure report with layer status, test counts, architecture compliance,
+  registry audit, REST surface, NATS contract, open defects, readiness
+  score, and final `SETTINGS_SERVICE_COMPLETE` decision.
+- **1038 total tests**: 48 architecture + 501 settings + 229 audit + 263
+  foundation. 0 failures, 1 pre-existing skip.
 
 ### Files Changed
 
 - **Added:**
-  `backend/settings/__init__.py`
-  `backend/settings/domain/__init__.py`
-  `backend/settings/domain/model.py`
-  `backend/settings/domain/exceptions.py`
-  `backend/settings/domain/rules.py`
-  `backend/settings/domain/factory.py`
-  `tests/test_settings_domain.py` — 107 comprehensive domain tests.
+  `tests/test_settings_integration.py` — 76 tests
+  `tests/test_settings_service_closure.py` — 25 tests
+  `docs/status/settings_service_completion_report.md`
 - **Updated:**
-  `docs/status/development_status.md` (this update).
+  `docs/status/development_status.md`
 
 ### Contracts Changed
 
-- **No external contracts changed** — domain layer only. No ports, APIs,
-  events, or persistence schemas yet.
+- None. No domain, API, or NATS contracts were modified.
 
 ### Validation Performed
 
-- **107 settings domain tests pass** covering:
-  - Value objects: SettingId (uniqueness, string), Version (validation,
-    string, current, equality), SettingCategory/SettingScope (all values),
-    SettingDefinition, Setting.
-  - Key validation: format regex (valid, empty, dot-prefix/suffix, uppercase,
-    spaces, special chars, numeric start, deep nesting), known keys,
-    reserved keys.
-  - Category/scope/version validation: valid/invalid values.
-  - Value validation: type matching (bool/int/float/str/list/dict), max
-    length, numeric bounds, allowed values, safety floor (numeric min,
-    boolean default floor).
-  - Factory: creates profile with defaults, registry match, custom version,
-    empty registry, invalid definition rejection.
-  - Aggregate: initial state, create with settings, get/has_key queries,
-    apply new/update setting, emit SettingUpdated events, apply_patch
-    (multi-update, unknown key→error, validation, empty, safety floor),
-    get_all_in_category, reset_to_defaults (reset/event), event accumulation
-    and immutability.
-  - Edge cases: unknown key, type mismatches (str↔bool, float↔int, None),
-    zero value, repr.
-  - Default registry: 19 settings across 6 categories, all valid, category
-    counts, reserved key enforcement.
-- **381 total tests pass** (45 architecture + 107 settings domain + 229 audit).
+- **1038 total tests pass** (48 architecture + 501 settings + 229 audit +
+  263 foundation). 0 failures, 1 pre-existing skip.
+- **501 settings tests pass** (107 domain + 43 ports + 65 contracts + 55
+  use cases + 54 adapters + 76 bootstrap/API/NATS + 101 integration/closure).
+- Full lifecycle verified: create → patch → query → reset → publish → mark.
+- Repository roundtrip lossless across all 20 settings.
+- Event flow validated for both `SettingUpdated` and `SettingsReset`.
+- REST contracts verified for all 5 endpoints with all status codes.
+- Architecture compliance: no layer violations, clean import barriers.
+- Service readiness score: PRODUCTION.
 
 ### Known Issues
 
@@ -317,18 +314,11 @@ Domain layer only — no ports, no persistence, no infrastructure.
 
 ### Decisions Required
 
-- Proceed with SVC-002-B (Settings ports), SVC-002-C (persistence contracts),
-  or switch to another service?
+- Settings Service is certified complete. Proceed to SVC-001 outbox
+  publisher hardening?
 
 ### Recommended Next Action
 
-Continue the Settings hexagonal stack:
-
-1. **SVC-002-B Settings Ports** — Port protocols: `SettingsRepositoryPort`,
-   `SettingsCachePort`, `SettingsEventPublisherPort`.
-2. **SVC-002-C Persistence Contracts** — Storage DTOs, mapper protocols,
-   schema contracts for `settings` schema.
-3. **SVC-002-D Use Cases** — GetSettings, PatchSettings, ResetSettings,
-   GetSettingByKey.
-4. **SVC-002-E Adapters** — SQLAlchemy ORM models, mapper impls.
-5. **SVC-002-F Service Bootstrap** — FastAPI routes, DI wiring.
+Continue with **SVC-001 outbox publisher hardening**: governance
+envelope validation (`nats_manager.publish()`), retry budget, DLQ
+routing, graceful NATS disconnect handling, ACK tracking.
