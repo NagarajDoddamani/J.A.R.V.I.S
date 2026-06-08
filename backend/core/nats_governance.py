@@ -67,6 +67,7 @@ ALLOWED_COMMAND_DOMAINS: Final[frozenset[str]] = frozenset(
         "settings",
         "knowledge",
         "consent",
+        "approval",
         "deletion",
     }
 )
@@ -327,9 +328,12 @@ class ConsumerSpec:
     deliver_policy: str = "all"
 
 
-#: The six core v1.2 command consumers. Each is a durable single-owner
+#: Core v1.2 command consumers. Each is a durable single-owner
 #: pull consumer bound to its imperative subject. The owning handler
 #: is the only component permitted to attach a competing consumer.
+#: The ``deletion`` domain is reserved for deferred deletion-job
+#: commands (e.g. purge, cancel-deletion) tracked via the API's
+#: ``GET /deletion-jobs/{job_id}`` endpoint.
 COMMAND_CONSUMER_SPECS: Final[tuple[ConsumerSpec, ...]] = tuple(
     ConsumerSpec(
         stream=STREAM_COMMANDS,
@@ -337,18 +341,7 @@ COMMAND_CONSUMER_SPECS: Final[tuple[ConsumerSpec, ...]] = tuple(
         description=f"Owning consumer for jarvis.command.{domain}.*.v1",
         filter_subjects=(f"jarvis.command.{domain}.>.v1",),
     )
-    for domain in (
-        "request",
-        "notification",
-        "wallpaper",
-        "memory",
-        "research",
-        "automation",
-        "settings",
-        "knowledge",
-        "consent",
-        "deletion",
-    )
+    for domain in sorted(ALLOWED_COMMAND_DOMAINS)
 )
 
 
@@ -504,7 +497,7 @@ def validate_envelope(envelope: dict[str, Any], *, kind: str) -> None:
     if payload is None:
         raise GovernanceError("payload is required (use an empty object for no data)")
     validate_sensitive_payload(payload)
-    subject = envelope.get("subject") or envelope.get("command_type") or envelope.get("event_type")
+    subject = envelope.get("subject")
     if isinstance(subject, str):
         parse_subject(subject)
 

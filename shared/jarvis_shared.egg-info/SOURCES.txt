@@ -6,4 +6,10 @@ jarvis_shared.egg-info/dependency_links.txt
 jarvis_shared.egg-info/requires.txt
 jarvis_shared.egg-info/top_level.txt
 schemas/__init__.py
+schemas/api.py
+schemas/commands.py
+schemas/enums.py
+schemas/events.py
+schemas/metadata.py
 schemas/models.py
+schemas/types.py

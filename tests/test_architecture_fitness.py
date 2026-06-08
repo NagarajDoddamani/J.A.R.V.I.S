@@ -88,6 +88,9 @@ ALLOWED_ADAPTER_PATHS = {
     "backend/core",
     "backend/main.py",
     "backend/api",
+    "backend/audit/adapters",
+    "backend/audit/bootstrap.py",
+    "backend/audit/nats.py",
     "backend/migrations",
     "tools",
     "tests",
@@ -95,7 +98,11 @@ ALLOWED_ADAPTER_PATHS = {
 
 
 def _iter_python_files() -> list[Path]:
-    return list(REPO_ROOT.rglob("*.py"))
+    skip_dirs = {".venv", "build", "dist", "__pycache__", ".git", "node_modules"}
+    return [
+        p for p in REPO_ROOT.rglob("*.py")
+        if not any(part in skip_dirs for part in p.parts)
+    ]
 
 
 def _is_allowed(path: Path) -> bool:

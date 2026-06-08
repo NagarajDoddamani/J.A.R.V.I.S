@@ -1,8 +1,10 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from backend.api.router import api_router
+from backend.audit.nats import publish_outbox_events
 from backend.core.config import settings
 from backend.core.logging import logger, setup_logging
 from backend.core.middleware import PayloadEnforcementMiddleware
@@ -21,6 +23,8 @@ async def lifespan(app: FastAPI):
         nats_max_payload_bytes=settings.NATS_MAX_PAYLOAD_BYTES,
     )
 
+    outbox_task: asyncio.Task[None] | None = None
+
     try:
         await nats_manager.connect()
         if settings.NATS_AUTO_BOOTSTRAP:
@@ -30,10 +34,28 @@ async def lifespan(app: FastAPI):
                 logger.error("NATS governance bootstrap failed", error=str(exc))
         await redis_manager.connect()
         await qdrant_manager.connect()
+
+        # Start the audit outbox publisher if NATS is healthy
+        if nats_manager.js is not None:
+            outbox_task = asyncio.create_task(
+                publish_outbox_events(
+                    nats_manager.js,
+                    interval_seconds=5.0,
+                )
+            )
+            logger.info("Audit outbox publisher started")
     except Exception as e:
         logger.error("Infrastructure initialization failed", error=str(e))
 
     yield
+
+    # Cancel background tasks
+    if outbox_task is not None:
+        outbox_task.cancel()
+        try:
+            await outbox_task
+        except asyncio.CancelledError:
+            pass
 
     logger.info("Shutting down JARVIS Backend")
     await nats_manager.close()
