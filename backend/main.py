@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from backend.api.router import api_router
 from backend.audit.nats import publish_outbox_events
+from backend.memory.nats import publish_memory_outbox_events
 from backend.settings.nats import publish_settings_outbox_events
 from backend.core.config import settings
 from backend.core.logging import logger, setup_logging
@@ -49,6 +50,14 @@ async def lifespan(app: FastAPI):
             outbox_tasks.append(
                 asyncio.create_task(
                     publish_settings_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_memory_outbox_events(
                         nats_manager.js,
                         interval_seconds=5.0,
                     )
