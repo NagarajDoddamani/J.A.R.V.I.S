@@ -4,31 +4,31 @@
 **Last updated:** 2026-06-09  
 **Updated by:** AI Agent  
 **Repository state:** SVC-001 complete. SVC-002 fully complete (A–G).
-SVC-003 fully complete (A–G). 1766 total tests pass (45
-architecture + 728 memory + 501 settings + 229 audit + 263
-foundation). Phase 01 exit gate remains open.
+SVC-003 fully complete (A–G). SVC-004 fully complete (A–G). 2563
+total tests pass (45 architecture + 728 memory + 501 settings + 229
+audit + 263 foundation + 797 knowledge).
+Phase 01 exit gate remains open.
 
 ## Current Phase
 
-**Phase 02: Core Services — Step completed: SVC-003-G Memory
+**Phase 02: Core Services — Step completed: SVC-004-G Knowledge
 Integration & Service Closure**
 
-Memory Service fully implemented and verified across all seven
-layers (A–G). Full lifecycle integration tests cover consent
-lifecycle (grant→get→revoke→purge), memory lifecycle
-(create→update→delete→get→search→get_deleted), outbox events
-(all 8 event types with FIFO ordering and mark_published),
-repository roundtrip (Domain→DTO→ORM→DB→ORM→DTO→Domain), REST
-contract verification (all 8 routes, status codes, error shapes,
-search filtering), and cross-service scenarios (consent active
-allows memory, consent revoked blocks create, memory after
-consent grant). Service closure audits confirm registry integrity
-(8 providers, 8 routes, 3 models, 8 outbox events), layer
-isolation (no upward imports), architecture compliance
-(import barriers), coverage metrics (641 memory + 87 new), and
-security compliance (no secrets, no PII in outbox payloads).
-87 new tests (55 integration + 32 service closure).
-Next step: TBD.
+Knowledge Service fully complete across all seven layers (A–G).
+116 new tests (84 integration + 32 service closure) verify source
+lifecycle, document lifecycle, chunk lifecycle, ingestion lifecycle,
+reindex flow, repository roundtrip (DTO→ORM→DB→DTO→Domain for all
+5 entities), event flow (all 10 domain events through outbox with
+FIFO ordering), REST contract (all 11 routes, status codes, error
+bodies, DTO shapes), cross-entity integrity (source→document→chunk
+cascade, inactive source blocking, deleted entity protection), and
+outbox ordering (FIFO append, partial mark, pending isolation).
+Service closure audits: domain enum completeness, architecture
+import barriers, layer isolation, provider/route/event/repo/mapper/DTO
+inventory, security compliance (classification, empty name/title,
+invalid transitions, deleted entity protection), and coverage metrics.
+Full suite: 2563 passed, 1 skipped, 52 warnings.
+Complete. KNOWLEDGE_SERVICE_COMPLETE.
 
 The Audit Service (SVC-001) has been fully implemented across all six
 hexagonal architecture layers:
@@ -250,6 +250,61 @@ hexagonal architecture layers:
   87 new integration/closure), security compliance (no secrets,
   no PII in outbox payloads). Tests: 87 new (55 integration + 32
   service closure). 1766 total tests pass.
+- **SVC-004-A Knowledge Domain** — Knowledge Service domain layer.
+  4 entities, 4 enums, 8 value objects, 10 domain events, 22 domain
+  rules, `KnowledgeFactory` with 5 creation operations. Tests: 206.
+  1972 total tests pass.
+- **SVC-004-B Knowledge Ports** — Knowledge Service application
+  ports. 4 repository ports (`KnowledgeSourceRepositoryPort` —
+  save/find_by_id/find_by_status/find_by_type/count,
+  `KnowledgeDocumentRepositoryPort` — save/find_by_id/
+  find_by_source_id/find_by_checksum/find_deleted/count,
+  `KnowledgeChunkRepositoryPort` — save/find_by_id/
+  find_by_document_id/find_by_index_range/count,
+  `IngestionJobRepositoryPort` — save/find_by_id/
+  find_by_source_id/find_by_status/count), 1 outbox port
+  (`KnowledgeOutboxPort` — append/fetch_unpublished/mark_published
+  with at-least-once delivery semantics), 1 clock port
+  (`KnowledgeClockPort` — UTC-aware now()), 1 ID generator port
+  (`KnowledgeIdGeneratorPort` — generate_source_id/generate_document_id/
+  generate_chunk_id/generate_job_id). All ports use `typing.Protocol`
+  for structural subtyping. Tests: 75 contract tests with stub
+  implementations covering save/find semantics, null returns, query
+  filtering, FIFO ordering, limit enforcement, mark_published
+  idempotence, UUID uniqueness, deterministic test stubs, and method
+   signature verification. 2047 total tests pass.
+- **SVC-004-C Knowledge Persistence Contracts** — 5 storage DTOs
+   (frozen dataclasses with flattened primitives), 5 mapper Protocol
+   interfaces (domain_to_dto/dto_to_domain), 5 schema contract tuples
+   in `knowledge` schema (KNOWLEDGE_SOURCES_TABLE, KNOWLEDGE_DOCUMENTS_TABLE,
+   KNOWLEDGE_CHUNKS_TABLE, INGESTION_JOBS_TABLE, KNOWLEDGE_OUTBOX_TABLE).
+   142 persistence contract tests covering DTO construction, mapper
+   roundtrips, schema consistency, DTO↔schema alignment, schema↔domain
+   alignment, and domain↔DTO parity. 2189 total tests pass.
+- **SVC-004-D Knowledge Use Cases** — 12 application use cases
+   (RegisterSource, DeleteSource, GetSource, ListSources,
+   IngestDocument, GetDocument, CreateChunk, GetChunksByDocument,
+   StartIngestion, CompleteIngestion, FailIngestion, GetIngestionJob,
+    RequestReindex) with 26 request/response DTOs, 7-exception
+    UseCaseError hierarchy, and factory/entity orchestration. 75 tests.
+    2264 total tests pass.
+- **SVC-004-E Knowledge Adapters** — 5 SQLAlchemy ORM models, 5 mapper
+   implementations (lossless Domain→DTO↔ORM roundtrip), 4 repository
+   implementations (upsert pattern, all query/count methods),
+   SqlAlchemyKnowledgeOutboxAdapter (FIFO append/fetch/mark_published),
+   SystemClockAdapter (UTC-aware now), UuidGeneratorAdapter (domain ID
+   types). 85 tests (35 unit + 50 integration with SQLite in-memory).
+   2349 total tests pass.
+- **SVC-004-F Knowledge Bootstrap, API, and NATS** — 13 dependency
+   providers with FastAPI `Depends`, 11 REST routes at `/api/v1/knowledge`
+   (sources CRUD, document ingest/get, chunk create, chunks-by-document,
+   ingestion start/complete/fail/get, reindex), NATS outbox publisher
+   (`publish_knowledge_outbox_events`) with 10 event types mapped to
+   `jarvis.knowledge.event.<type>.v1` subjects, FIFO ordering, envelope
+   with event_id/event_type/kind/producer/aggregate_id/occurred_at/payload.
+   `backend/main.py` updated with knowledge outbox publisher task.
+   `backend/api/router.py` updated with knowledge routes. 98 tests.
+   2447 total tests pass.
 
 ## Pending Tasks
 
@@ -262,6 +317,8 @@ hexagonal architecture layers:
    fixture suite, lockfile parity).
 3. Production grant pattern for the per-service roles.
 4. Pin exact production image versions.
+5. **Next step: SVC-005**
+   Phase 03 services.
 
 ## Known Issues
 
@@ -325,6 +382,19 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 | SVC-003-G | Integration & service closure | Done | 87 |
 | **Total** | | | **728** |
 
+## SVC-004 Knowledge Service Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-004-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 206 |
+| SVC-004-B | Application ports (repository, outbox, clock, id gen) | Done | 75 |
+| SVC-004-C | Persistence DTOs, mapper protocols, schema contracts | Done | 142 |
+| SVC-004-D | Application use cases (12 use cases, request/response DTOs, exceptions) | Done | 75 |
+| SVC-004-E | Adapters (mappers, models, repositories, outbox, clock, id gen) | Done | 85 |
+| SVC-004-F | Bootstrap, API, NATS (DI wiring, REST routes, outbox publisher) | Done | 98 |
+| SVC-004-G | Integration & service closure | Done | 116 |
+| **Total** | | | **797** |
+
 ## SVC-001 Audit Service Status
 
 | ID | Task | Status | Tests |
@@ -341,79 +411,87 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 
 ### Objective
 
-Complete SVC-003-G Memory Integration & Service Closure: full
-lifecycle verification, outbox audit, REST contract verification,
-architecture audits, layer isolation audit, registry audit,
-coverage metrics, and completion report.
+Complete SVC-004-G Knowledge Integration & Service Closure: 116
+new tests (84 integration + 32 service closure), completion report,
+final suite validation.
 
 ### Completed
 
-- **`tests/test_memory_integration.py`** — 55 tests across 5 groups:
-  `TestConsentLifecycle` (grant→get→revoke→find_active→find_revoked→
-  count, event emission for grant/revoke), `TestMemoryLifecycle`
-  (create→get→update→delete→search→get_deleted, event emission for all
-  6 memory events), `TestOutboxEvents` (all 8 event types appended,
-  fetched FIFO, mark_published isolation),
-  `TestRepositoryRoundtrip` (Domain→DTO→ORM→DB→ORM→DTO→Domain with
-  consent record), `TestRESTContract` (all 8 routes, 201/200/400/404/422
-  status codes, DTO shapes, error bodies, search by category/state),
-  `TestCrossServiceScenarios` (consent active allows memory, revoked
-  blocks, memory created after consent granted)
-- **`tests/test_memory_service_closure.py`** — 32 tests across 4 groups:
-  `TestRegistryAudit` (8 providers, 8 routes, 3 ORM models, 8 outbox
-  events, subject mappings, error mappings),
-  `TestArchitectureCompliance` (import barrier enforcement, allowed
-  adapter paths), `TestLayerIsolation` (no upward imports from
-  adapters/application/domain),
-  `TestCoverageMetrics` (at least 641 memory tests, at least 87 new
-  integration/closure), `TestSecurityCompliance` (no secrets in source,
-  no PII in outbox payloads, consent_id required for memory creation)
+- **`tests/test_knowledge_integration.py`** — 84 tests across 10 areas:
+  `TestSourceLifecycle` (8), `TestDocumentLifecycle` (9),
+  `TestChunkLifecycle` (9), `TestIngestionLifecycle` (9),
+  `TestReindexFlow` (3), `TestRepositoryRoundtrip` (6),
+  `TestEventFlow` (10), `TestRESTContract` (15),
+  `TestCrossEntityIntegrity` (8), `TestOutboxOrdering` (7).
+  Covers source/document/chunk/ingestion lifecycle transitions,
+  reindex creates job with outbox event, DTO→ORM→DB→DTO→Domain
+  roundtrip for all 5 entities with no data loss, all 10 domain
+  events emitted through outbox with correct types and FIFO marking,
+  all 11 REST routes with status codes, error bodies, and DTO shapes,
+  cross-entity integrity (source→document→chunk cascade, inactive
+  source blocking, deleted entity protection), and FIFO ordering
+  with partial mark and pending isolation.
+- **`tests/test_knowledge_service_closure.py`** — 32 tests across 10
+  audit areas: `TestDomainEnumCompleteness` (3 — SourceStatus,
+  DocumentStatus, IngestionStatus), `TestArchitectureImports` (4 —
+  domain/ports/persistence/use_cases don't import adapters/bootstrap/
+  api/nats), `TestLayerIsolation` (5 — no upward imports from any
+  knowledge layer), `TestProviderAudit` (1 — 13 providers),
+  `TestRouteAudit` (1 — 11 routes), `TestEventAudit` (1 — 10 outbox
+  event types), `TestRepositoryAudit` (1 — 4 repos + 1 outbox),
+  `TestMapperAudit` (1 — 5 mapper implementations), `TestDTOAudit`
+  (1 — 5 storage DTOs), `TestSecurityCompliance` (5 — classification
+  enforcement, empty name/title rejected, invalid transition blocked,
+  invalid source type rejected, deleted source blocks activation),
+  `TestCoverageMetrics` (9 — minimum test counts per layer).
+- **`docs/status/knowledge_service_completion_report.md`** — Full
+  completion report with layer summary, domain model, architecture,
+  test coverage, file inventory, outbox events, known issues, and
+  decisions recorded. Status: `KNOWLEDGE_SERVICE_COMPLETE`.
 
 ### Files Changed
 
 - **Added:**
-  `tests/test_memory_integration.py` — 55 integration tests
-  `tests/test_memory_service_closure.py` — 32 closure audit tests
+  `tests/test_knowledge_integration.py` — 1613 lines, 84 tests
+  `tests/test_knowledge_service_closure.py` — 612 lines, 32 tests
+  `docs/status/knowledge_service_completion_report.md` — full report
 - **Updated:**
-  `docs/status/development_status.md` — SVC-003-G completion
+  `docs/status/development_status.md` — SVC-004-G completion
 
 ### Validation Performed
 
-- 1766 total tests pass (728 memory + 501 settings + 229 audit + 263
-  foundation + 45 architecture). 87 new tests (55 integration + 32
-  closure). 0 failures, 1 pre-existing skip.
-- Full lifecycle verified: consent (grant→revoke→purge→find), memory
-  (create→update→delete→get→search→get_deleted).
-- All 8 outbox events (MemoryCreated, MemoryUpdated, MemoryDeleted,
-  MemoryPurgeScheduled, MemoryPurged, MemoryRetentionExpired,
-  ConsentGranted, ConsentRevoked) verified with FIFO ordering and
-  mark_published isolation.
-- REST contracts verified for all 8 routes with correct status codes,
-  error shapes (MemoryNotFoundError→404, ConsentNotActiveError→400,
-  MemoryDomainError→422), and search filtering.
-- Cross-service scenarios verified: consent gate logic works through
-  the API (active→create succeeds, revoked→create blocked).
-- Architecture barriers enforced — no upward imports from adapters,
-  application, or domain layers.
-- Registry audit confirms 8 dependency providers, 8 REST routes,
-  3 ORM models, 8 outbox events.
+- 2563 total tests pass (797 knowledge + 728 memory + 501 settings
+  + 229 audit + 263 foundation + 45 architecture). 116 new tests.
+  0 failures, 1 pre-existing skip, 52 pre-existing warnings.
+- All 84 integration tests pass: source/document/chunk/ingestion
+  lifecycle transitions, reindex flow with outbox event, repository
+  roundtrip for all 5 entities (no data loss), all 10 domain events
+  emitted through outbox with correct types and FIFO marking, all 11
+  REST routes with correct status codes and DTO shapes, cross-entity
+  integrity (cascade, inactive block, deleted protection), outbox
+  FIFO ordering with partial mark isolation.
+- All 32 service closure tests pass: domain enum completeness,
+  architecture import barriers (4 layers don't import adapters),
+  layer isolation (no upward imports), provider audit (13/13),
+  route audit (11/11), event audit (10/10), repository audit (4+1),
+  mapper audit (5/5), DTO audit (5/5), security compliance (5/5),
+  coverage metrics (9 thresholds met).
+- Full suite: 0 failures, 1 pre-existing skip, 52 pre-existing warnings.
 
 ### Known Issues
 
 - 1 pre-existing skip (`test_lockfile` — pnpm not on PATH).
-- `DeletedMemoryUpdateError` in the delete endpoint maps to 400
-  rather than 200 for already-deleted memories (domain prevents
-  double-deletion).
-- `test_memory_api.py` and `test_memory_bootstrap.py` have
-  pre-existing `SAWarning: transaction already deassociated from
-  connection` (SQLite connection-bound session pattern).
+- Route count: 11 distinct routes produce 13 `@router` registrations;
+  closure route audit tests for 11 route URLs.
+- `KnowledgeSource.activate()`/`disable()` don't emit events (only
+  `delete()` emits `KnowledgeSourceDeleted`). Intentional design.
 
 ### Decisions Required
 
-- Memory Service SVC-003 fully complete (A–G). All seven layers
-  implemented and verified.
+- None. Knowledge Service fully complete (A–G). Next step: Phase 03.
 
 ### Recommended Next Action
 
-Proceed to next Phase 02 service. Options: SVC-004 NATS Governance
-service or SVC-005 Architecture Audit service.
+Proceed to Phase 03 services (SVC-005). All core services are now
+complete: Audit (SVC-001), Settings (SVC-002), Memory (SVC-003),
+Knowledge (SVC-004).
