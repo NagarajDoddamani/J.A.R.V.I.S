@@ -4,31 +4,25 @@
 **Last updated:** 2026-06-09  
 **Updated by:** AI Agent  
 **Repository state:** SVC-001 complete. SVC-002 fully complete (A–G).
-SVC-003 fully complete (A–G). SVC-004 fully complete (A–G). 2563
+SVC-003 fully complete (A–G). SVC-004 fully complete (A–G).
+SVC-005 fully complete (A–G).
+3363
 total tests pass (45 architecture + 728 memory + 501 settings + 229
-audit + 263 foundation + 797 knowledge).
+audit + 263 foundation + 797 knowledge + 810 notification).
 Phase 01 exit gate remains open.
 
 ## Current Phase
 
-**Phase 02: Core Services — Step completed: SVC-004-G Knowledge
-Integration & Service Closure**
+**Phase 03: Notification Services — COMPLETE. All steps (A–G) done.**
 
-Knowledge Service fully complete across all seven layers (A–G).
-116 new tests (84 integration + 32 service closure) verify source
-lifecycle, document lifecycle, chunk lifecycle, ingestion lifecycle,
-reindex flow, repository roundtrip (DTO→ORM→DB→DTO→Domain for all
-5 entities), event flow (all 10 domain events through outbox with
-FIFO ordering), REST contract (all 11 routes, status codes, error
-bodies, DTO shapes), cross-entity integrity (source→document→chunk
-cascade, inactive source blocking, deleted entity protection), and
-outbox ordering (FIFO append, partial mark, pending isolation).
-Service closure audits: domain enum completeness, architecture
-import barriers, layer isolation, provider/route/event/repo/mapper/DTO
-inventory, security compliance (classification, empty name/title,
-invalid transitions, deleted entity protection), and coverage metrics.
-Full suite: 2563 passed, 1 skipped, 52 warnings.
-Complete. KNOWLEDGE_SERVICE_COMPLETE.
+Notification Service fully implemented across all six hexagonal
+architecture layers plus REST API and NATS publisher. 810 tests,
+0 failures. Service closure verified: enum completeness, event
+completeness (6/6 events), route inventory (9/9 routes), provider
+inventory (9/9 providers), repository inventory (3 repos, 14 methods),
+mapper inventory (3 mappers), DTO inventory (22 DTOs), architecture
+import barriers, layer isolation, security compliance.
+Full suite: 3363 passed, 1 skipped, 0 failures.
 
 The Audit Service (SVC-001) has been fully implemented across all six
 hexagonal architecture layers:
@@ -317,8 +311,6 @@ hexagonal architecture layers:
    fixture suite, lockfile parity).
 3. Production grant pattern for the per-service roles.
 4. Pin exact production image versions.
-5. **Next step: SVC-005**
-   Phase 03 services.
 
 ## Known Issues
 
@@ -407,91 +399,72 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 | SVC-001-F | Service bootstrap (FastAPI routes, NATS, DI wiring) | Done | — |
 | SVC-001-G | Integration & API contract tests | Done | 38 |
 
+## SVC-005 Notification Service Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-005-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 252 |
+| SVC-005-B | Application ports (repository, outbox, clock, id gen) | Done | 62 |
+| SVC-005-C | Persistence DTOs, mapper protocols, schema contracts | Done | 110 |
+| SVC-005-D | Application use cases (9 use cases, request/response DTOs, exceptions) | Done | 74 |
+| SVC-005-E | Adapters (mappers, models, repositories, outbox, clock, id gen) | Done | 63 |
+| SVC-005-F | Bootstrap, API, NATS (DI wiring, REST routes, outbox publisher) | Done | 117 |
+| SVC-005-G | Integration & service closure | Done | 132 |
+| **Total** | | | **810** |
+
 ## Session Handoff
 
 ### Objective
 
-Complete SVC-004-G Knowledge Integration & Service Closure: 116
-new tests (84 integration + 32 service closure), completion report,
-final suite validation.
+Complete SVC-005-G Notification Integration & Service Closure:
+integration tests (70–100), service closure tests (25–40),
+completion report. SVC-005-G COMPLETE. NOTIFICATION_SERVICE_COMPLETE.
 
 ### Completed
 
-- **`tests/test_knowledge_integration.py`** — 84 tests across 10 areas:
-  `TestSourceLifecycle` (8), `TestDocumentLifecycle` (9),
-  `TestChunkLifecycle` (9), `TestIngestionLifecycle` (9),
-  `TestReindexFlow` (3), `TestRepositoryRoundtrip` (6),
-  `TestEventFlow` (10), `TestRESTContract` (15),
-  `TestCrossEntityIntegrity` (8), `TestOutboxOrdering` (7).
-  Covers source/document/chunk/ingestion lifecycle transitions,
-  reindex creates job with outbox event, DTO→ORM→DB→DTO→Domain
-  roundtrip for all 5 entities with no data loss, all 10 domain
-  events emitted through outbox with correct types and FIFO marking,
-  all 11 REST routes with status codes, error bodies, and DTO shapes,
-  cross-entity integrity (source→document→chunk cascade, inactive
-  source blocking, deleted entity protection), and FIFO ordering
-  with partial mark and pending isolation.
-- **`tests/test_knowledge_service_closure.py`** — 32 tests across 10
-  audit areas: `TestDomainEnumCompleteness` (3 — SourceStatus,
-  DocumentStatus, IngestionStatus), `TestArchitectureImports` (4 —
-  domain/ports/persistence/use_cases don't import adapters/bootstrap/
-  api/nats), `TestLayerIsolation` (5 — no upward imports from any
-  knowledge layer), `TestProviderAudit` (1 — 13 providers),
-  `TestRouteAudit` (1 — 11 routes), `TestEventAudit` (1 — 10 outbox
-  event types), `TestRepositoryAudit` (1 — 4 repos + 1 outbox),
-  `TestMapperAudit` (1 — 5 mapper implementations), `TestDTOAudit`
-  (1 — 5 storage DTOs), `TestSecurityCompliance` (5 — classification
-  enforcement, empty name/title rejected, invalid transition blocked,
-  invalid source type rejected, deleted source blocks activation),
-  `TestCoverageMetrics` (9 — minimum test counts per layer).
-- **`docs/status/knowledge_service_completion_report.md`** — Full
-  completion report with layer summary, domain model, architecture,
-  test coverage, file inventory, outbox events, known issues, and
-  decisions recorded. Status: `KNOWLEDGE_SERVICE_COMPLETE`.
-
-### Files Changed
-
-- **Added:**
-  `tests/test_knowledge_integration.py` — 1613 lines, 84 tests
-  `tests/test_knowledge_service_closure.py` — 612 lines, 32 tests
-  `docs/status/knowledge_service_completion_report.md` — full report
-- **Updated:**
-  `docs/status/development_status.md` — SVC-004-G completion
+- **`tests/test_notification_integration.py`** — 95 tests covering:
+  1. Full lifecycle (Create → Show → Acknowledge → Get → List)
+  2. Dismiss flow (Create → Show → Dismiss)
+  3. Expiration flow (Create → Expire)
+  4. Action lifecycle (Create → CreateAction → InvokeAction)
+  5. Repository roundtrip (Notification/Action/Outbox DTO ↔ ORM ↔ DB ↔ Domain)
+  6. Outbox lifecycle (Append → Fetch → Publish → Mark)
+  7. FIFO ordering (multiple events, mixed types, cross-commit)
+  8. REST contracts (all 9 routes, 200/201/400/404/422)
+  9. Target filtering (type, id, combined, status, priority)
+  10. Event coverage (all 6 types via parametrized tests, NATS publish)
+- **`tests/test_notification_service_closure.py`** — 37 tests covering:
+  1. Enum completeness (3 enums, 13 values, valid transitions)
+  2. Event completeness (6 events in outbox/NATS/mapper)
+  3. Route inventory (9 routes registered)
+  4. Provider inventory (9 providers with correct types)
+  5. Repository inventory (3 repos, 14 methods)
+  6. Mapper inventory (3 mappers, bidirectional methods)
+  7. DTO inventory (19 use case + 3 storage = 22 DTOs)
+  8. Architecture import barriers (domain/app no frameworks)
+  9. Layer isolation (no upward imports across layers)
+  10. Security compliance (6 secret patterns)
+  11. Module import verification (29 modules)
+- **`docs/status/notification_service_completion_report.md`** — full report
 
 ### Validation Performed
 
-- 2563 total tests pass (797 knowledge + 728 memory + 501 settings
-  + 229 audit + 263 foundation + 45 architecture). 116 new tests.
-  0 failures, 1 pre-existing skip, 52 pre-existing warnings.
-- All 84 integration tests pass: source/document/chunk/ingestion
-  lifecycle transitions, reindex flow with outbox event, repository
-  roundtrip for all 5 entities (no data loss), all 10 domain events
-  emitted through outbox with correct types and FIFO marking, all 11
-  REST routes with correct status codes and DTO shapes, cross-entity
-  integrity (cascade, inactive block, deleted protection), outbox
-  FIFO ordering with partial mark isolation.
-- All 32 service closure tests pass: domain enum completeness,
-  architecture import barriers (4 layers don't import adapters),
-  layer isolation (no upward imports), provider audit (13/13),
-  route audit (11/11), event audit (10/10), repository audit (4+1),
-  mapper audit (5/5), DTO audit (5/5), security compliance (5/5),
-  coverage metrics (9 thresholds met).
-- Full suite: 0 failures, 1 pre-existing skip, 52 pre-existing warnings.
+- 3363 total tests pass (810 notification + 797 knowledge + 728 memory
+  + 501 settings + 229 audit + 263 foundation + 45 architecture).
+  0 failures, 1 pre-existing skip.
+- Integration tests: 95 new, covering all 10 required areas.
+- Service closure tests: 37 new, covering all 11 audit areas.
+- Notification tests exceed 700 (810 total).
+- Repository total exceeds 3300 (3363 total).
 
 ### Known Issues
 
 - 1 pre-existing skip (`test_lockfile` — pnpm not on PATH).
-- Route count: 11 distinct routes produce 13 `@router` registrations;
-  closure route audit tests for 11 route URLs.
-- `KnowledgeSource.activate()`/`disable()` don't emit events (only
-  `delete()` emits `KnowledgeSourceDeleted`). Intentional design.
 
 ### Decisions Required
 
-- None. Knowledge Service fully complete (A–G). Next step: Phase 03.
+- None.
 
 ### Recommended Next Action
 
-Proceed to Phase 03 services (SVC-005). All core services are now
-complete: Audit (SVC-001), Settings (SVC-002), Memory (SVC-003),
-Knowledge (SVC-004).
+Notification Service is fully complete. Do not begin SVC-006.
