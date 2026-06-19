@@ -130,9 +130,11 @@ def create_action_use_case(
 
 def invoke_action_use_case(
     action_repo: SqlAlchemyNotificationActionRepository = Depends(_action_repo),
+    notification_repo: SqlAlchemyNotificationRepository = Depends(_notification_repo),
     outbox: SqlAlchemyNotificationOutboxAdapter = Depends(_outbox),
 ) -> InvokeActionUseCase:
     return InvokeActionUseCase(
         action_repo=action_repo,
+        notification_repo=notification_repo,
         outbox=outbox,
     )

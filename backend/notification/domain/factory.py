@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from backend.notification.domain.exceptions import InvalidNotificationPriorityError
 from backend.notification.domain.model import (
     ActionId,
     ExpirationPolicy,
@@ -23,7 +22,6 @@ from backend.notification.domain.model import (
     NotificationTitle,
 )
 from backend.notification.domain.rules import (
-    validate_action_creation,
     validate_notification_creation,
 )
 
@@ -113,24 +111,13 @@ class NotificationFactory:
         label: str,
         callback_name: str,
     ) -> NotificationAction:
-        validate_action_creation(
-            label=label,
-            callback_name=callback_name,
-            notification=notification,
-        )
-
-        action = NotificationAction(
-            action_id=ActionId(),
-            notification_id=notification.notification_id,
-            label=label,
-            callback_name=callback_name,
-            created_at=datetime.now(tz=timezone.utc),
-        )
-
-        return action
+        return notification.add_action(label=label, callback_name=callback_name)
 
     @staticmethod
     def invoke_action(
+        notification: Notification,
         action: NotificationAction,
     ) -> NotificationActionInvoked:
-        return action.invoke()
+        event = action.invoke()
+        notification.register_action_invocation(event)
+        return event

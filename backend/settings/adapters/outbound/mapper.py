@@ -152,7 +152,7 @@ class SettingsOutboxMapperImpl:
         pid = str(event.profile_id)
         if isinstance(event, SettingUpdated):
             return SettingsOutboxStorageDto(
-                event_id=pid,
+                event_id=str(event.event_id or uuid4()),
                 profile_id=pid,
                 event_type="setting_updated",
                 key=event.key,
@@ -162,7 +162,7 @@ class SettingsOutboxMapperImpl:
                 occurred_at=event.occurred_at,
             )
         return SettingsOutboxStorageDto(
-            event_id=pid,
+            event_id=str(event.event_id or uuid4()),
             profile_id=pid,
             event_type="settings_reset",
             key=None,
@@ -176,8 +176,10 @@ class SettingsOutboxMapperImpl:
         self, dto: SettingsOutboxStorageDto
     ) -> SettingUpdated | SettingsReset:
         pid = SettingId(value=UUID(dto.profile_id))
+        event_uuid = UUID(dto.event_id)
         if dto.event_type == "setting_updated":
             return SettingUpdated(
+                event_id=event_uuid,
                 profile_id=pid,
                 key=dto.key or "",
                 old_value=dto.old_value,
@@ -187,6 +189,7 @@ class SettingsOutboxMapperImpl:
             )
         previous_count = int(dto.old_value) if dto.old_value else 0
         return SettingsReset(
+            event_id=event_uuid,
             profile_id=pid,
             previous_count=previous_count,
             occurred_at=dto.occurred_at,

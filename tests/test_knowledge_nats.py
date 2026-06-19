@@ -663,7 +663,7 @@ class TestPublishKnowledgeOutboxEvents:
         from backend.knowledge.adapters.outbound.models import KnowledgeOutboxModel
         models = session.query(KnowledgeOutboxModel).all()
         for m in models:
-            assert m.published is True
+            assert m.published_at is not None
 
     @pytest.mark.asyncio
     async def test_publishes_all_event_types(

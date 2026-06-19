@@ -210,6 +210,7 @@ class Notification:
         acknowledged_at: datetime | None = None,
         dismissed_at: datetime | None = None,
         expires_at: datetime | None = None,
+        actions: list[NotificationAction] | None = None,
     ) -> None:
         self._notification_id = notification_id or NotificationId()
         self._title = title
@@ -223,7 +224,8 @@ class Notification:
         self._acknowledged_at = acknowledged_at
         self._dismissed_at = dismissed_at
         self._expires_at = expires_at
-        self._events: list[NotificationShown | NotificationAcknowledged | NotificationDismissed | NotificationExpired] = []
+        self._actions = actions or []
+        self._events: list[NotificationShown | NotificationAcknowledged | NotificationDismissed | NotificationExpired | NotificationActionInvoked] = []
 
     # -- properties ---------------------------------------------------------
 
@@ -276,7 +278,11 @@ class Notification:
         return self._expires_at
 
     @property
-    def events(self) -> list[NotificationShown | NotificationAcknowledged | NotificationDismissed | NotificationExpired]:
+    def actions(self) -> list[NotificationAction]:
+        return list(self._actions)
+
+    @property
+    def events(self) -> list[NotificationShown | NotificationAcknowledged | NotificationDismissed | NotificationExpired | NotificationActionInvoked]:
         return list(self._events)
 
     @property
@@ -340,7 +346,50 @@ class Notification:
             NotificationExpired(notification_id=self._notification_id, occurred_at=now)
         )
 
+    def register_action_invocation(
+        self, event: NotificationActionInvoked
+    ) -> None:
+        self._events.append(event)
+
+    def add_action(
+        self,
+        label: str,
+        callback_name: str,
+    ) -> NotificationAction:
+        from backend.notification.domain.rules import (
+            validate_action_creation,
+        )
+
+        validate_action_creation(
+            label=label,
+            callback_name=callback_name,
+            notification=self,
+        )
+
+        action = NotificationAction(
+            action_id=ActionId(),
+            notification_id=self._notification_id,
+            label=label,
+            callback_name=callback_name,
+            created_at=datetime.now(tz=timezone.utc),
+        )
+        self._actions.append(action)
+        return action
+
+    def invoke_action(self, action_id: ActionId) -> NotificationActionInvoked:
+        action = self._find_action(action_id)
+        event = action.invoke()
+        self._events.append(event)
+        return event
+
     # -- internal -----------------------------------------------------------
+
+    def _find_action(self, action_id: ActionId) -> NotificationAction:
+        for action in self._actions:
+            if action.action_id == action_id:
+                return action
+        from backend.notification.domain.exceptions import ActionNotFoundError
+        raise ActionNotFoundError(str(action_id))
 
     def _clear_events(self) -> None:
         self._events.clear()

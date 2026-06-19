@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 
 from sqlalchemy import select, update
@@ -265,12 +266,17 @@ class SqlAlchemyNotificationOutboxAdapter:
     def append(self, event: NotificationOutboxDomainEvent) -> None:
         dto = self._mapper.event_to_dto(event)
         model = NotificationOutboxModel(
-            event_id=dto.event_id,
-            event_type=dto.event_type,
+            message_id=dto.event_id,
+            subject=dto.event_type,
+            created_at=dto.occurred_at,
+            published_at=None,
+            headers={},
+            attempts=0,
+            last_error=None,
+            correlation_id=dto.event_id,
+            causation_id=None,
             aggregate_id=dto.aggregate_id,
-            occurred_at=dto.occurred_at,
-            payload=dto.payload,
-            published=False,
+            payload=json.loads(dto.payload) if dto.payload else {},
         )
         self._session.add(model)
         self._session.flush()
@@ -280,18 +286,18 @@ class SqlAlchemyNotificationOutboxAdapter:
     ) -> list[NotificationOutboxDomainEvent]:
         stmt = (
             select(NotificationOutboxModel)
-            .where(NotificationOutboxModel.published == False)  # noqa: E712
-            .order_by(NotificationOutboxModel.occurred_at.asc())
+            .where(NotificationOutboxModel.published_at.is_(None))
+            .order_by(NotificationOutboxModel.created_at.asc())
             .limit(limit)
         )
         models = list(self._session.scalars(stmt))
         return [self._dto_to_event(m) for m in models]
 
-    def mark_published(self, notification_id: str) -> None:
+    def mark_published(self, event_id: str) -> None:
         stmt = (
             update(NotificationOutboxModel)
-            .where(NotificationOutboxModel.aggregate_id == notification_id)
-            .values(published=True)
+            .where(NotificationOutboxModel.message_id == event_id)
+            .values(published_at=datetime.now(timezone.utc))
         )
         self._session.execute(stmt)
         self._session.flush()
@@ -303,11 +309,11 @@ class SqlAlchemyNotificationOutboxAdapter:
             NotificationOutboxStorageDTO,
         )
         dto = NotificationOutboxStorageDTO(
-            event_id=model.event_id,
-            event_type=model.event_type,
-            aggregate_id=model.aggregate_id,
-            occurred_at=model.occurred_at,
-            payload=model.payload,
-            published=model.published,
+            event_id=model.message_id,
+            event_type=model.subject,
+            aggregate_id=model.aggregate_id or "",
+            occurred_at=model.created_at,
+            payload=json.dumps(model.payload, default=str) if model.payload else None,
+            published=model.published_at is not None,
         )
         return self._mapper.dto_to_event(dto)

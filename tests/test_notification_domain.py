@@ -1554,7 +1554,7 @@ class TestFactoryInvokeAction:
         action = NotificationFactory.create_action(
             notification=n, label="Mark Read", callback_name="mark_read",
         )
-        event = NotificationFactory.invoke_action(action)
+        event = NotificationFactory.invoke_action(notification=n, action=action)
         assert isinstance(event, NotificationActionInvoked)
         assert event.action_id == action.action_id
         assert event.callback_name == "mark_read"
@@ -1564,8 +1564,8 @@ class TestFactoryInvokeAction:
         action = NotificationFactory.create_action(
             notification=n, label="Mark Read", callback_name="mark_read",
         )
-        NotificationFactory.invoke_action(action)
-        NotificationFactory.invoke_action(action)
+        NotificationFactory.invoke_action(notification=n, action=action)
+        NotificationFactory.invoke_action(notification=n, action=action)
         assert len(action.events) == 2
 
 

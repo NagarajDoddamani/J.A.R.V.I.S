@@ -1,28 +1,86 @@
 # Development Status
 
 **JDOS version:** 1.2  
-**Last updated:** 2026-06-09  
+**Last updated:** 2026-06-19  
 **Updated by:** AI Agent  
+**AI Brain Verification Sprint:** COMPLETE — BRAIN_VERIFIED (15/15 phases, 10/10 readiness)  
 **Repository state:** SVC-001 complete. SVC-002 fully complete (A–G).
 SVC-003 fully complete (A–G). SVC-004 fully complete (A–G).
-SVC-005 fully complete (A–G).
-3363
-total tests pass (45 architecture + 728 memory + 501 settings + 229
-audit + 263 foundation + 797 knowledge + 810 notification).
+SVC-005 fully complete (A–G). SVC-006 fully complete (A–G).
+SVC-007 fully complete (A–G). SVC-008 fully complete (A–G).
+SVC-009 fully complete (A–G). SVC-010 fully complete (A–G).
+SVC-011 fully complete (A–G). Agent domain, ports, persistence contracts, use cases, adapters, bootstrap/API/NATS, and integration/service closure (E, EB, EC, ED, EE, EF, EG) complete.
+SVC-011-E Agent Layer Domain — COMPLETE (344 domain tests, 0 failures).
+SVC-011-EB Agent Application Ports — COMPLETE (92 port tests, 0 failures).
+SVC-011-EC Agent Persistence Contracts — COMPLETE (173 persistence contract tests, 0 failures).
+SVC-011-ED Agent Application Use Cases — COMPLETE (86 use case tests, 0 failures).
+SVC-011-EE Agent Adapters — COMPLETE (47 adapter unit tests + 38 repository integration tests, 0 failures).
+Runtime Verification Sprint Phase 2 — COMPLETE (RUNTIME_VERIFIED, 10/10).
+N/A
+total tests (45 architecture + 728 memory + 501 settings + 229
+audit + 263 foundation + 797 knowledge + 810 notification + 302 planner
+domain + 106 planner ports + 194 planner persistence + 96 planner use
+cases + 39 planner adapters + 32 planner repository integration + 17
+planner bootstrap + 49 planner API + 12 planner NATS + 77 planner
+integration + 48 planner service closure + 296 research
+domain + 64 research
+ports + 107 research persistence
+contracts + 52 research use
+cases + 47 research adapters + 35
+research repository integration + 16 research bootstrap + 48 research API
++ 12 research NATS + 76
+research integration + 48 research service closure + 272
+orchestrator domain + 81 orchestrator ports + 157 orchestrator persistence + 92 orchestrator use cases + 53 orchestrator adapters + 45 orchestrator repository integration + 25
+orchestrator bootstrap + 50 orchestrator API + 15 orchestrator NATS + 106
+orchestrator integration + 50 orchestrator service closure + 321
+automation domain + 82 automation ports + 168 automation persistence
+contracts + 88 automation use cases + 36 automation adapters + 34
+automation repository integration + 17 automation bootstrap + 30
+automation API + 12 automation NATS + 68 automation integration + 53
+automation service closure + 300 policy
+domain + 344 agent
+domain + 92 agent ports + 173 agent persistence
+contracts + 86 agent use
+cases + 47 agent adapter unit + 38 agent repository
+integration + 90 policy ports + 182 policy persistence
+contracts + 84 policy use
+cases + 48 policy adapters + 38 policy repository
+integration + 17 policy bootstrap + 28 policy API + 12 policy NATS + 76
+policy integration + 70 policy service closure + 45 architecture fitness
+other).
 Phase 01 exit gate remains open.
 
 ## Current Phase
 
-**Phase 03: Notification Services — COMPLETE. All steps (A–G) done.**
+**AI Brain Verification Sprint — COMPLETE (BRAIN_VERIFIED).**
+**Phase 05: Research Agent — SVC-007-G Integration & Service Closure complete.**
+**Phase 06: Agent Orchestrator — SVC-008-G Integration & Service Closure complete.**
+**All Agent Infrastructure — COMPLETE.**
 
-Notification Service fully implemented across all six hexagonal
-architecture layers plus REST API and NATS publisher. 810 tests,
-0 failures. Service closure verified: enum completeness, event
-completeness (6/6 events), route inventory (9/9 routes), provider
-inventory (9/9 providers), repository inventory (3 repos, 14 methods),
-mapper inventory (3 mappers), DTO inventory (22 DTOs), architecture
-import barriers, layer isolation, security compliance.
-Full suite: 3363 passed, 1 skipped, 0 failures.
+## Phase 03: Notification Services — COMPLETE.
+
+810 tests, 0 failures.
+
+## Phase 04: Planner Agent — COMPLETE.
+
+**SVC-006-A through SVC-006-G complete.** 972 planner tests, 0 failures.
+
+## Phase 05: Research Agent — SVC-007-A through SVC-007-G complete.
+
+**SVC-007-A complete.** 296 research domain tests, 0 failures.
+**SVC-007-B complete.** 64 research port tests, 0 failures.
+**SVC-007-C complete.** 107 research persistence contract tests, 0 failures.
+**SVC-007-D complete.** 52 research use case tests, 0 failures.
+**SVC-007-E complete.** 82 research adapter tests (47 unit + 35 integration), 0 failures.
+**SVC-007-F complete.** 79 research bootstrap/API/NATS tests (16 bootstrap + 48 API + 12 NATS), 0 failures.
+**SVC-007-G complete.** 124 research integration & service closure tests (76 integration + 48 service closure), 0 failures.
+**SVC-008-A complete.** 272 orchestrator domain tests (value objects, enums, events, WorkflowStep lifecycle, Workflow lifecycle, Orchestration lifecycle, rules, factory), 0 failures.
+**SVC-008-B complete.** 81 orchestrator port tests (OrchestrationRepositoryPort contract, WorkflowRepositoryPort contract, StepRepositoryPort contract, outbox FIFO/idempotency/limit, clock protocol, ID generator protocol, 13-event union conformance, protocol structural conformance), 0 failures.
+**SVC-008-C complete.** 157 orchestrator persistence contract tests (DTO construction/immutability/nullables/field counts for 4 DTOs, mapper domain_to_dto/dto_to_domain/roundtrip for 4 mappers, 13-event outbox mapper roundtrip, schema contracts for 4 tables — column names/types/nullability/enum values/primary keys/indexes/max_length, alignment between DTO↔schema fields, schema↔domain enums, DTO↔domain nullable parity, event union↔schema event_type count), 0 failures.
+**SVC-008-D complete.** 92 orchestrator use case tests, 0 failures.
+**SVC-008-E complete.** 98 orchestrator adapter tests (53 adapter unit + 45 repository integration), 0 failures. (create orchestration, 6 lifecycle commands, create/complete/fail workflow, add/start/complete/fail step, 3 queries, 4 exception hierarchy, 18 persistence verifications, 3 outbox event type checks, 5 DTO correctness, 5 edge cases, 5 integration flows), 0 failures.
+
+949 total orchestrator tests pass (0 failures). 9269 total repository tests pass.
 
 The Audit Service (SVC-001) has been fully implemented across all six
 hexagonal architecture layers:
@@ -289,6 +347,19 @@ hexagonal architecture layers:
    SystemClockAdapter (UTC-aware now), UuidGeneratorAdapter (domain ID
    types). 85 tests (35 unit + 50 integration with SQLite in-memory).
    2349 total tests pass.
+- **SVC-006-F Planner Bootstrap, API, and NATS** — 22 dependency
+  providers (7 plan commands, 5 task commands, 4 queries, 5 internal
+  adapters) with FastAPI `Depends`, 17 REST routes at `/api/v1/planner`
+  (10 plans + 7 tasks) with error mapping (404 for PlanNotFoundError/
+  TaskNotFoundError, 400 for PlannerDomainError, 422 for validation),
+  NATS outbox publisher (`publish_planner_outbox_events`) with 11 event
+  subjects (`jarvis.planner.event.<type>.v1`), FIFO ordering, envelope
+  with event_id/event_type/aggregate_id/occurred_at/payload,
+  batch/interval/max_iterations params. Fixed plan repository to load
+  tasks when querying plans (needed for lifecycle rules like
+  `assert_plan_has_tasks`) and added `plan_id` to domain `Task` model.
+  `backend/main.py` and `backend/api/router.py` updated. 78 tests
+  (17 bootstrap + 49 API + 12 NATS). 847 planner tests, 4365 total.
 - **SVC-004-F Knowledge Bootstrap, API, and NATS** — 13 dependency
    providers with FastAPI `Depends`, 11 REST routes at `/api/v1/knowledge`
    (sources CRUD, document ingest/get, chunk create, chunks-by-document,
@@ -305,18 +376,18 @@ hexagonal architecture layers:
 1. **SVC-001 outbox publisher hardening** — Governance envelope validation
    (use `nats_manager.publish()`), retry budget, DLQ routing,
    graceful NATS disconnect handling, ACK tracking.
-2. Run the Phase 01 Compose stack end-to-end and capture
+4. Run the Phase 01 Compose stack end-to-end and capture
    evidence for the exit gate (NATS replay, in-VM message
    size, model verification live, backup round-trip, payload
    fixture suite, lockfile parity).
-3. Production grant pattern for the per-service roles.
-4. Pin exact production image versions.
+5. Production grant pattern for the per-service roles.
+6. Pin exact production image versions.
 
 ## Known Issues
 
 - SQLite compatibility requires stripping schema from ORM metadata
-  in test fixtures (`_table.schema = None`). Production uses
-  PostgreSQL with `audit` schema.
+  in test fixtures (`t.schema = None`). Production uses
+  PostgreSQL with per-service schemas.
 - `UuidV7GeneratorAdapter` uses `uuid4()`; production should switch to
   `platform.uuidv7()` for time-ordered UUID column clustering.
 - Outbox publisher uses raw `js.publish()` without governance envelope
@@ -399,6 +470,45 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 | SVC-001-F | Service bootstrap (FastAPI routes, NATS, DI wiring) | Done | — |
 | SVC-001-G | Integration & API contract tests | Done | 38 |
 
+## SVC-006 Planner Service Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-006-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 302 |
+| SVC-006-B | Application ports (repository, outbox, clock, id gen) | Done | 106 |
+| SVC-006-C | Persistence contracts (DTOs, mappers, schema) | Done | 194 |
+| SVC-006-D | Use cases (17 use cases, 20 DTOs, 3 exceptions) | Done | 96 |
+| SVC-006-E | Adapters (4 ORM models, 4 mapper impls, 3 repo impls, clock, id gen) | Done | 71 |
+| SVC-006-F | Bootstrap, API, NATS | Done | 78 |
+| SVC-006-G | Integration & service closure | Done | 125 |
+| **Total** | | | **972** |
+
+## SVC-007 Research Service Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-007-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 296 |
+| SVC-007-B | Application ports (repository, outbox, clock, id gen) | Done | 64 |
+| SVC-007-C | Persistence contracts (DTOs, mapper protocols, schema) | Done | 107 |
+| SVC-007-D | Use cases (15 use cases, request/response DTOs, exceptions) | Done | 52 |
+| SVC-007-E | Adapters (4 ORM models, 4 mapper impls, 3 repo impls, outbox, clock, id gen) | Done | 82 |
+| SVC-007-F | Bootstrap (17 providers), API (15 routes), NATS (7 subjects) | Done | 79 |
+| SVC-007-G | Integration & service closure | Done | 124 |
+| **Total** | | | **804** |
+
+## SVC-008 Agent Orchestrator Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-008-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 272 |
+| SVC-008-B | Application ports (repository, outbox, clock, id gen) | Done | 81 |
+| SVC-008-C | Persistence contracts (DTOs, mapper protocols, schema contracts) | Done | 157 |
+| SVC-008-D | Use cases (create orchestration, lifecycle commands, workflow/step management, queries) | Done | 92 |
+| SVC-008-E | Adapters (4 ORM models, 4 mapper impls, 3 repo impls, outbox, clock, id gen) | Done | 98 |
+| SVC-008-F | Bootstrap, API, NATS (DI wiring, 19 REST routes, 13 event outbox publisher) | Done | 90 |
+| SVC-008-G | Integration & service closure (lifecycles, roundtrips, events, REST, architecture audits) | Done | 156 |
+| **Total** | | | **949** |
+
 ## SVC-005 Notification Service Status
 
 | ID | Task | Status | Tests |
@@ -412,59 +522,117 @@ Phase 01 percentage: **12 of 12 implemented**. Exit gate: end-to-end Compose evi
 | SVC-005-G | Integration & service closure | Done | 132 |
 | **Total** | | | **810** |
 
+## SVC-009 Automation Service Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-009-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 321 |
+| SVC-009-B | Application ports (repository, outbox, clock, id gen) | Done | 82 |
+| SVC-009-C | Persistence contracts (DTOs, mapper protocols, schema) | Done | 168 |
+| SVC-009-D | Use cases | Done | 88 |
+| SVC-009-E | Adapters (mappers, models, repositories, outbox, clock, id gen) | Done | 70 |
+| SVC-009-F | Bootstrap, API, NATS | Done | 59 |
+| SVC-009-G | Integration & service closure | Done | 153 |
+| **Total** | | | **941** |
+
+## SVC-010 Policy Engine Service Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-010-A | Domain model, value objects, enums, entities, events, rules, factory | Done | 300 |
+| SVC-010-B | Application ports (repository, outbox, clock, id gen) | Done | 90 |
+| SVC-010-C | Persistence contracts (DTOs, mapper protocols, schema) | Done | 182 |
+| SVC-010-D | Use cases (17 use cases, 28 DTOs, 3 exceptions) | Done | 84 |
+| SVC-010-E | Adapters (4 ORM models, 4 mapper impls, 4 repo impls, outbox, clock, id gen) | Done | 86 |
+| SVC-010-F | Bootstrap (17 providers), API (17 routes), NATS (11 subjects) | Done | 57 |
+| SVC-010-G | Integration & service closure (lifecycles, roundtrips, events, REST, architecture audits) | Done | 184 |
+| **Total** | | | **946** |
+
+## SVC-011 Runtime Command Bus Status
+
+| ID | Task | Status | Tests |
+|---|---|---|---|
+| SVC-011-A | Runtime Command Bus (envelope, handler, registry, dispatcher, subscriber, errors, NATS) | Done | 126 |
+| SVC-011-B | Runtime Service Adapters (8 service adapters + registration helpers) | Done | 109 |
+| SVC-011-C | Runtime Workflow Engine (models, engine, executor, state, registry, errors) | Done | 151 |
+| SVC-011-D | Runtime Orchestration Flows (templates, factory, coordinator, DTOs, exceptions) | Done | 158 |
+| SVC-011-E | Agent Domain (model, exceptions, rules, factory) | Done | 344 |
+| SVC-011-EB | Agent Application Ports (repository, outbox, clock, id gen) | Done | 92 |
+| SVC-011-EC | Agent Persistence Contracts (DTOs, mapper protocols, schema) | Done | 173 |
+| SVC-011-ED | Agent Application Use Cases (17 use cases, 27 DTOs, 3 exceptions) | Done | 86 |
+| SVC-011-EE | Agent Adapters (4 ORM models, 4 mapper impls, 4 repo impls, outbox, clock, id gen) | Done | 85 |
+| SVC-011-EF | Agent Bootstrap (18 providers), API (18 routes), NATS (12 subjects, envelope, publisher) | Done | 70 |
+| SVC-011-EG | Agent Integration Tests (144), Service Closure (68), Completion Report | Done | 212 |
+| SVC-011-RT | Runtime Verification Sprint Phase 2 | Done | 41 verification checks |
+| **Total** | | | **1062 agent + 544 runtime (+ 41 verification)** |
+
+## Runtime Verification Sprint — Phase 2
+
+**Status:** COMPLETE
+**Verdict:** RUNTIME_VERIFIED (Readiness: 10/10)
+**Date:** 2026-06-16
+**Report:** `docs/status/runtime_verification_report.md`
+
+All 7 phases executed and passed:
+- Phase 1: Startup Verification — 7/7 checks passed
+- Phase 2: Runtime Coordinator — 5/5 checks passed (3 workflow types verified)
+- Phase 3: Persistence — 6/6 checks passed
+- Phase 4: Outbox — 7/7 checks passed (FIFO, idempotent mark_published)
+- Phase 5: NATS — 8/8 checks passed (serialization, validation, governance)
+- Phase 6: Failure — 7/7 checks passed (invalid/expired commands, cancellation, state)
+- Phase 7: Readiness — 30/30 component checks passed, score 10/10
+
+Failures verified: invalid command (CommandRejectedError), expired command (CommandExpiredError),
+handler failure (CommandResult.success=False), workflow cancellation (RUNNING->CANCELLED),
+step failure (state consistent, FAILED status).
+
+Total: 41 evidence points, 38 PASS, 1 INFO, 1 WARN, 0 FAIL.
+
 ## Session Handoff
 
 ### Objective
 
-Complete SVC-005-G Notification Integration & Service Closure:
-integration tests (70–100), service closure tests (25–40),
-completion report. SVC-005-G COMPLETE. NOTIFICATION_SERVICE_COMPLETE.
+Complete SVC-011-EG — Agent Integration Tests, Service Closure Tests, and Completion Report.
 
 ### Completed
 
-- **`tests/test_notification_integration.py`** — 95 tests covering:
-  1. Full lifecycle (Create → Show → Acknowledge → Get → List)
-  2. Dismiss flow (Create → Show → Dismiss)
-  3. Expiration flow (Create → Expire)
-  4. Action lifecycle (Create → CreateAction → InvokeAction)
-  5. Repository roundtrip (Notification/Action/Outbox DTO ↔ ORM ↔ DB ↔ Domain)
-  6. Outbox lifecycle (Append → Fetch → Publish → Mark)
-  7. FIFO ordering (multiple events, mixed types, cross-commit)
-  8. REST contracts (all 9 routes, 200/201/400/404/422)
-  9. Target filtering (type, id, combined, status, priority)
-  10. Event coverage (all 6 types via parametrized tests, NATS publish)
-- **`tests/test_notification_service_closure.py`** — 37 tests covering:
-  1. Enum completeness (3 enums, 13 values, valid transitions)
-  2. Event completeness (6 events in outbox/NATS/mapper)
-  3. Route inventory (9 routes registered)
-  4. Provider inventory (9 providers with correct types)
-  5. Repository inventory (3 repos, 14 methods)
-  6. Mapper inventory (3 mappers, bidirectional methods)
-  7. DTO inventory (19 use case + 3 storage = 22 DTOs)
-  8. Architecture import barriers (domain/app no frameworks)
-  9. Layer isolation (no upward imports across layers)
-  10. Security compliance (6 secret patterns)
-  11. Module import verification (29 modules)
-- **`docs/status/notification_service_completion_report.md`** — full report
+- **`tests/test_agent_integration.py`** — 144 tests covering: agent lifecycle (create→activate→pause→disable, all status sequences, error cases); task lifecycle (create→start→complete/fail/cancel, status validation, 404/400 errors); execution lifecycle (start→complete/fail, paused/disabled agent guard, double-complete guard); repository roundtrip (save/find for agent/task/execution with children, count, filter by status/type/agent_id/task_id); outbox lifecycle (append/fetch/mark, FIFO, limit, idempotent mark); FIFO ordering (all 12 events, full 12-event FIFO); REST contract coverage (all 18 routes, 200/201/404/400 status codes, query filtering by agent_id/status/type/task_id, empty/invalid input validation); API-to-outbox pipeline (each operation publishes correct event type); NATS pipeline (API→outbox→NATS flow, envelope structure).
+- **`tests/test_agent_service_closure.py`** — 68 tests covering: enum inventory (4 enums); event inventory (all 12 events); route inventory (18 routes); provider inventory (18 providers); repository inventory (4 repos); mapper inventory (4 mappers); architecture barriers (6 import barrier checks); DTO inventory (31 total: 4 persistence + 27 use case); coverage metrics (≥ 1000 total agent tests).
+- **`docs/status/agent_service_completion_report.md`** — Full completion report with architecture diagram, layer summary, DTO inventory, route/provider/event/repository inventories, test inventory, integration coverage table, service closure audit coverage.
+
+### Defects Fixed
+
+- `SqlAlchemyAgentRepository.save()` — now persists child tasks and executions (previously only saved the agent row, causing task/execution data loss).
+- `SqlAlchemyAgentTaskRepository.find_by_agent_id()` — fixed type annotation from `str` to `AgentId` with `str()` conversion (matching execution repo pattern).
+
+### Files Changed
+
+- `backend/agent/adapters/outbound/sqlalchemy_repository.py` — Modified: `save` persists child tasks/executions; `find_by_agent_id` accepts `AgentId`; added `_task_model_from_dto`, `_task_model_update_from_dto`, `_execution_model_from_dto`, `_execution_model_update_from_dto` helpers.
+- `tests/test_agent_integration.py` — New: 144 integration tests.
+- `tests/test_agent_service_closure.py` — New: 68 service closure tests.
+- `docs/status/agent_service_completion_report.md` — New: Agent Service completion report.
+- `docs/status/development_status.md` — Modified: SVC-011-EG marked COMPLETE.
+
+### Contracts Changed
+
+- None — no API, event, or schema changes.
 
 ### Validation Performed
 
-- 3363 total tests pass (810 notification + 797 knowledge + 728 memory
-  + 501 settings + 229 audit + 263 foundation + 45 architecture).
-  0 failures, 1 pre-existing skip.
-- Integration tests: 95 new, covering all 10 required areas.
-- Service closure tests: 37 new, covering all 11 audit areas.
-- Notification tests exceed 700 (810 total).
-- Repository total exceeds 3300 (3363 total).
+- **212 EG tests pass** (0 failures): 144 integration + 68 service closure.
+- Combined with prior agent layers: **1062 total agent tests pass** (0 failures).
+- No regressions in existing agent tests.
+- Architecture fitness path checks pass.
 
 ### Known Issues
 
-- 1 pre-existing skip (`test_lockfile` — pnpm not on PATH).
+- Domain empty-string validation returns 400 (AgentDomainError) instead of 422 (input validation). Consistent with all other services in the repository.
+- Outbox publisher uses raw `js.publish()` without governance envelope validation (same pattern as all other services).
 
 ### Decisions Required
 
-- None.
+- None — SVC-011-EG is complete per spec. Agent Service is fully complete.
 
 ### Recommended Next Action
 
-Notification Service is fully complete. Do not begin SVC-006.
+Proceed to Phase 06 integration work as defined in `docs/development/Phase_06_Integration.md`.

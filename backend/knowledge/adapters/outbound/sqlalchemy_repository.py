@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
@@ -11,6 +13,7 @@ from backend.knowledge.adapters.outbound.mapper import (
     KnowledgeOutboxMapperImpl,
     KnowledgeSourceMapperImpl,
 )
+
 from backend.knowledge.adapters.outbound.models import (
     IngestionJobModel,
     KnowledgeChunkModel,
@@ -402,14 +405,17 @@ class SqlAlchemyKnowledgeOutboxAdapter:
     def append(self, event: KnowledgeOutboxDomainEvent) -> None:
         dto = self._mapper.event_to_dto(event)
         model = KnowledgeOutboxModel(
-            event_id=dto.event_id,
-            event_type=dto.event_type,
+            message_id=dto.event_id,
+            subject=dto.event_type,
             aggregate_id=dto.aggregate_id,
-            occurred_at=dto.occurred_at,
+            created_at=dto.occurred_at,
             correlation_id=dto.correlation_id,
             causation_id=dto.causation_id,
             payload=dto.payload,
-            published=False,
+            published_at=None,
+            headers="{}",
+            attempts=0,
+            last_error=None,
         )
         self._session.add(model)
         self._session.flush()
@@ -417,18 +423,18 @@ class SqlAlchemyKnowledgeOutboxAdapter:
     def fetch_unpublished(self, limit: int = 100) -> list[KnowledgeOutboxDomainEvent]:
         stmt = (
             select(KnowledgeOutboxModel)
-            .where(KnowledgeOutboxModel.published == False)
-            .order_by(KnowledgeOutboxModel.occurred_at.asc())
+            .where(KnowledgeOutboxModel.published_at.is_(None))
+            .order_by(KnowledgeOutboxModel.created_at.asc())
             .limit(limit)
         )
         models = list(self._session.scalars(stmt))
         return [self._model_to_event(m) for m in models]
 
-    def mark_published(self, aggregate_id: str) -> None:
+    def mark_published(self, event_id: str) -> None:
         stmt = (
             update(KnowledgeOutboxModel)
-            .where(KnowledgeOutboxModel.aggregate_id == aggregate_id)
-            .values(published=True)
+            .where(KnowledgeOutboxModel.message_id == event_id)
+            .values(published_at=datetime.now(timezone.utc))
         )
         self._session.execute(stmt)
         self._session.flush()
@@ -438,13 +444,13 @@ class SqlAlchemyKnowledgeOutboxAdapter:
             KnowledgeOutboxStorageDTO,
         )
         dto = KnowledgeOutboxStorageDTO(
-            event_id=model.event_id,
-            event_type=model.event_type,
+            event_id=model.message_id,
+            event_type=model.subject,
             aggregate_id=model.aggregate_id,
-            occurred_at=model.occurred_at,
+            occurred_at=model.created_at,
             correlation_id=model.correlation_id,
             causation_id=model.causation_id,
             payload=model.payload,
-            published=model.published,
+            published=model.published_at is not None,
         )
         return self._mapper.dto_to_event(dto)

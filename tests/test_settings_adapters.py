@@ -550,7 +550,7 @@ class TestSqlAlchemySettingsOutboxAdapter:
         outbox.append(event)
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 1
-        outbox.mark_published(str(unpublished[0].profile_id))
+        outbox.mark_published(str(unpublished[0].event_id))
         assert outbox.fetch_unpublished() == []
 
     def test_mark_published_idempotent(
@@ -559,8 +559,9 @@ class TestSqlAlchemySettingsOutboxAdapter:
         profile = make_profile()
         event = make_updated_event(profile)
         outbox.append(event)
-        outbox.mark_published(str(profile.profile_id))
-        outbox.mark_published(str(profile.profile_id))
+        fetched = outbox.fetch_unpublished()
+        outbox.mark_published(str(fetched[0].event_id))
+        outbox.mark_published(str(fetched[0].event_id))
         assert outbox.fetch_unpublished() == []
 
     def test_fifo_order(
@@ -607,8 +608,9 @@ class TestSqlAlchemySettingsOutboxAdapter:
             events.append(ev)
             outbox.append(ev)
 
-        outbox.mark_published(str(events[0].profile_id))
-        outbox.mark_published(str(events[1].profile_id))
+        unpublished = outbox.fetch_unpublished()
+        outbox.mark_published(str(unpublished[0].event_id))
+        outbox.mark_published(str(unpublished[1].event_id))
 
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 1
@@ -644,7 +646,8 @@ class TestSqlAlchemySettingsOutboxAdapter:
             events.append(ev)
             outbox.append(ev)
 
-        outbox.mark_published(str(events[1].profile_id))
+        unpublished_before = outbox.fetch_unpublished()
+        outbox.mark_published(str(unpublished_before[1].event_id))
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 2
 
@@ -726,7 +729,8 @@ class TestAdapterIntegration:
         event = make_updated_event(profile)
         adapter.append(event)
 
-        adapter.mark_published(str(event.profile_id))
+        unpublished = adapter.fetch_unpublished()
+        adapter.mark_published(str(unpublished[0].event_id))
         remaining = adapter.fetch_unpublished()
         assert len(remaining) == 0
 

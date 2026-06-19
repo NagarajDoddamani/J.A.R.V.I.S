@@ -287,14 +287,17 @@ class SqlAlchemyMemoryOutboxAdapter:
     def append(self, event: MemoryOutboxDomainEvent) -> None:
         dto = self._mapper.event_to_dto(event)
         model = MemoryOutboxModel(
-            event_id=dto.event_id,
-            event_type=dto.event_type,
+            message_id=dto.event_id,
+            subject=dto.event_type,
             aggregate_id=dto.aggregate_id,
-            occurred_at=dto.occurred_at,
+            created_at=dto.occurred_at,
             correlation_id=dto.correlation_id,
             causation_id=dto.causation_id,
             payload=dto.payload,
-            published=False,
+            published_at=None,
+            headers="{}",
+            attempts=0,
+            last_error=None,
         )
         self._session.add(model)
         self._session.flush()
@@ -302,8 +305,8 @@ class SqlAlchemyMemoryOutboxAdapter:
     def fetch_unpublished(self, limit: int = 100) -> list[MemoryOutboxDomainEvent]:
         stmt = (
             select(MemoryOutboxModel)
-            .where(MemoryOutboxModel.published == False)  # noqa: E712
-            .order_by(MemoryOutboxModel.occurred_at.asc())
+            .where(MemoryOutboxModel.published_at.is_(None))
+            .order_by(MemoryOutboxModel.created_at.asc())
             .limit(limit)
         )
         models = list(self._session.scalars(stmt))
@@ -312,8 +315,8 @@ class SqlAlchemyMemoryOutboxAdapter:
     def mark_published(self, event_id: str) -> None:
         stmt = (
             update(MemoryOutboxModel)
-            .where(MemoryOutboxModel.aggregate_id == event_id)
-            .values(published=True)
+            .where(MemoryOutboxModel.message_id == event_id)
+            .values(published_at=datetime.now(timezone.utc))
         )
         self._session.execute(stmt)
         self._session.flush()
@@ -323,13 +326,13 @@ class SqlAlchemyMemoryOutboxAdapter:
             MemoryOutboxStorageDTO,
         )
         dto = MemoryOutboxStorageDTO(
-            event_id=model.event_id,
-            event_type=model.event_type,
+            event_id=model.message_id,
+            event_type=model.subject,
             aggregate_id=model.aggregate_id,
-            occurred_at=model.occurred_at,
+            occurred_at=model.created_at,
             correlation_id=model.correlation_id,
             causation_id=model.causation_id,
             payload=model.payload,
-            published=model.published,
+            published=model.published_at is not None,
         )
         return self._mapper.dto_to_event(dto)

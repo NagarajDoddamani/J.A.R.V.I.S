@@ -92,6 +92,7 @@ class AuditEntryRecorded:
     correlation_id: str
     entry_index: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 class AuditEntry:

@@ -32,12 +32,15 @@ class CreateActionUseCase:
         if notification is None:
             raise NotificationNotFoundError(request.notification_id)
 
-        action = NotificationFactory.create_action(
+        NotificationFactory.create_action(
             notification=notification,
             label=request.label,
             callback_name=request.callback_name,
         )
+
+        action = notification.actions[-1]
         self._action_repo.save(action)
+        self._notification_repo.save(notification)
 
         return CreateActionResponse(
             action_id=str(action.action_id),

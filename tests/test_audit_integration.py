@@ -403,8 +403,8 @@ class TestOutboxPersistence:
         )
         session.commit()
 
-        entry_id = AuditEntryId(value=UUID(response.entry_id))
-        outbox_repo.mark_published(entry_id)
+        unpublished_before = outbox_repo.fetch_unpublished()
+        outbox_repo.mark_published(str(unpublished_before[0].event_id))
         unpublished = outbox_repo.fetch_unpublished()
         assert len(unpublished) == 0
 
@@ -441,7 +441,7 @@ class TestOutboxPersistence:
         unpublished = outbox_repo.fetch_unpublished(limit=2)
         assert len(unpublished) == 2
 
-        outbox_repo.mark_published(unpublished[0].entry_id)
+        outbox_repo.mark_published(str(unpublished[0].event_id))
         remaining = outbox_repo.fetch_unpublished()
         assert len(remaining) == 2  # only one was published
 

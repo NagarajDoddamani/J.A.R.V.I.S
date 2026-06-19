@@ -141,16 +141,21 @@ class NatsManager:
     async def _ensure_streams(self) -> None:
         assert self.js is not None
         for spec in STREAM_SPECS:
+            config = _build_stream_config(spec)
             try:
-                await self.js.add_stream(_build_stream_config(spec))
+                await self.js.add_stream(config)
                 logger.info("Stream ready", stream=spec.name, retention=spec.retention)
-            except Exception as exc:
-                logger.error(
-                    "Stream bootstrap failed",
-                    stream=spec.name,
-                    error=str(exc),
-                )
-                raise
+            except Exception:
+                try:
+                    await self.js.update_stream(config)
+                    logger.info("Stream updated", stream=spec.name, retention=spec.retention)
+                except Exception as exc:
+                    logger.error(
+                        "Stream bootstrap failed",
+                        stream=spec.name,
+                        error=str(exc),
+                    )
+                    raise
 
     async def _ensure_core_command_consumers(self) -> None:
         assert self.js is not None

@@ -486,11 +486,11 @@ class TestEventFlowValidation:
 
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 1
-        pid = str(unpublished[0].profile_id)
+        eid = str(unpublished[0].event_id)
 
-        outbox.mark_published(pid)
-        outbox.mark_published(pid)
-        outbox.mark_published(pid)
+        outbox.mark_published(eid)
+        outbox.mark_published(eid)
+        outbox.mark_published(eid)
         session.flush()
 
         remaining = outbox.fetch_unpublished()

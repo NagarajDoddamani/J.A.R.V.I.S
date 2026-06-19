@@ -71,7 +71,7 @@ class KnowledgeFactory:
             source_type=source_type,
             location=location,
             classification=classification,
-            status=SourceStatus.REGISTERED,
+            status=SourceStatus.ACTIVE,
             created_at=now,
         )
 

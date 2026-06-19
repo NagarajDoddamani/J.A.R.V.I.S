@@ -552,7 +552,7 @@ class TestPublishNotificationOutboxEvents:
         from backend.notification.adapters.outbound.models import NotificationOutboxModel
         models = session.query(NotificationOutboxModel).all()
         for m in models:
-            assert m.published is True
+            assert m.published_at is not None
 
     @pytest.mark.asyncio
     async def test_publishes_all_event_types(

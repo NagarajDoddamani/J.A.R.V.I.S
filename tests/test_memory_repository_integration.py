@@ -543,7 +543,7 @@ class TestMemoryOutboxAdapterIntegration:
         )
         fetched = outbox_adapter.fetch_unpublished(limit=10)
         assert len(fetched) == 1
-        outbox_adapter.mark_published(str(mid))
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished(limit=10)
         assert len(remaining) == 0
 
@@ -573,8 +573,8 @@ class TestMemoryOutboxAdapterIntegration:
         all_fetched = outbox_adapter.fetch_unpublished(limit=10)
         assert len(all_fetched) == 4
 
-        outbox_adapter.mark_published(str(mids[0]))
-        outbox_adapter.mark_published(str(mids[1]))
+        outbox_adapter.mark_published(str(all_fetched[0].event_id))
+        outbox_adapter.mark_published(str(all_fetched[1].event_id))
         remaining = outbox_adapter.fetch_unpublished(limit=10)
         assert len(remaining) == 2
 
@@ -598,8 +598,9 @@ class TestMemoryOutboxAdapterIntegration:
                 occurred_at=clock.now(),
             )
         )
-        outbox_adapter.mark_published(str(mid))
-        outbox_adapter.mark_published(str(mid))
+        fetched = outbox_adapter.fetch_unpublished(limit=10)
+        outbox_adapter.mark_published(str(fetched[0].event_id))
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished(limit=10)
         assert len(remaining) == 0
 
@@ -807,9 +808,10 @@ class TestFullLifecycleIntegration:
                 occurred_at=clock.now(),
             )
         )
-        outbox_adapter.mark_published(str(mid))
-        outbox_adapter.mark_published(str(mid))
-        outbox_adapter.mark_published(str(mid))
+        fetched = outbox_adapter.fetch_unpublished(limit=10)
+        outbox_adapter.mark_published(str(fetched[0].event_id))
+        outbox_adapter.mark_published(str(fetched[0].event_id))
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished(limit=10)
         assert len(remaining) == 0
 

@@ -31,7 +31,7 @@ class AuditOutboxPort(Protocol):
         """
         ...
 
-    def mark_published(self, entry_id: AuditEntryId) -> None:
+    def mark_published(self, event_id: str) -> None:
         """Mark an outbox event as successfully published.
 
         After the event has been delivered to the message

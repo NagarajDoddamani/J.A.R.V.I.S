@@ -60,11 +60,11 @@ async def publish_outbox_events(
                         envelope, separators=(",", ":")
                     ).encode("utf-8")
                     await js.publish(subject, serialized)
-                    repo.mark_published(event.entry_id)
+                    repo.mark_published(str(event.event_id))
                     logger.info(
                         "Outbox event published",
                         subject=subject,
-                        entry_id=str(event.entry_id),
+                        event_id=str(event.event_id),
                     )
                 if db is not None:
                     db.commit()

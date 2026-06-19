@@ -779,7 +779,7 @@ class TestReindexFlow:
         models = session.query(KnowledgeOutboxModel).all()
         assert len(models) >= 1
         last = models[-1]
-        assert last.event_type == "knowledge.reindex.requested"
+        assert last.subject == "knowledge.reindex.requested"
 
 
 # ===================================================================
@@ -1174,12 +1174,13 @@ class TestEventFlow:
         outbox.append(e)
         session.flush()
 
-        outbox.mark_published(str(sid))
+        fetched = outbox.fetch_unpublished()
+        outbox.mark_published(str(fetched[0].event_id))
         session.flush()
         remaining = outbox.fetch_unpublished()
         assert len(remaining) == 0
 
-        outbox.mark_published(str(sid))
+        outbox.mark_published(str(fetched[0].event_id))
         session.flush()
         remaining = outbox.fetch_unpublished()
         assert len(remaining) == 0

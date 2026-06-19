@@ -157,6 +157,7 @@ class NotificationOutboxMapperImpl:
             raise ValueError(f"Unknown event_type: {dto.event_type}")
         payload = json.loads(dto.payload) if dto.payload else {}
         aggregate_uuid = UUID(dto.aggregate_id)
+        event_uuid = UUID(dto.event_id)
 
         if event_cls is NotificationCreated:
 
@@ -166,6 +167,7 @@ class NotificationOutboxMapperImpl:
                 return str(v) if v is not None else ""
 
             return NotificationCreated(
+                event_id=event_uuid,
                 notification_id=NotificationId(value=aggregate_uuid),
                 title=_str(payload.get("title", "")),
                 message=_str(payload.get("message", "")),
@@ -177,26 +179,31 @@ class NotificationOutboxMapperImpl:
             )
         if event_cls is NotificationShown:
             return NotificationShown(
+                event_id=event_uuid,
                 notification_id=NotificationId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is NotificationAcknowledged:
             return NotificationAcknowledged(
+                event_id=event_uuid,
                 notification_id=NotificationId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is NotificationDismissed:
             return NotificationDismissed(
+                event_id=event_uuid,
                 notification_id=NotificationId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is NotificationExpired:
             return NotificationExpired(
+                event_id=event_uuid,
                 notification_id=NotificationId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is NotificationActionInvoked:
             return NotificationActionInvoked(
+                event_id=event_uuid,
                 notification_id=NotificationId(value=UUID(payload.get("notification_id", dto.aggregate_id))),
                 action_id=ActionId(value=aggregate_uuid),
                 callback_name=payload.get("callback_name", ""),

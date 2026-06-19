@@ -3,12 +3,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    BigInteger,
-    Boolean,
     DateTime,
     Integer,
     String,
     Text,
+    Uuid,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -75,20 +74,20 @@ class SettingsOutboxModel(Base):
     __tablename__ = "outbox"
     __table_args__ = _schema("outbox")
 
-    event_id: Mapped[str] = mapped_column(
-        String(256), primary_key=True
+    message_id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True)
+    aggregate_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True)
+    subject: Mapped[str] = mapped_column(String(512), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(tz=timezone.utc),
     )
-    profile_id: Mapped[str] = mapped_column(String(256), nullable=False)
-    event_type: Mapped[str] = mapped_column(String(32), nullable=False)
-    key: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    old_value: Mapped[str | None] = mapped_column(Text, nullable=True)
-    new_value: Mapped[str | None] = mapped_column(Text, nullable=True)
-    category: Mapped[str | None] = mapped_column(
-        String(32), nullable=True
+    published_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
-    occurred_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
-    published: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False
-    )
+    payload: Mapped[str | None] = mapped_column(Text, nullable=True)
+    headers: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    correlation_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True)
+    causation_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True)

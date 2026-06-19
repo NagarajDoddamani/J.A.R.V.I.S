@@ -159,12 +159,14 @@ class KnowledgeSourceRegistered:
     location: SourceLocation
     classification: str
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class KnowledgeSourceDeleted:
     source_id: KnowledgeSourceId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -175,18 +177,21 @@ class DocumentIngested:
     checksum: DocumentChecksum
     classification: str
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class DocumentIndexed:
     document_id: DocumentId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class DocumentDeleted:
     document_id: DocumentId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -195,12 +200,14 @@ class ChunkCreated:
     document_id: DocumentId
     chunk_index: ChunkIndex
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class ReindexRequested:
     source_id: KnowledgeSourceId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -208,12 +215,14 @@ class IngestionStarted:
     job_id: IngestionJobId
     source_id: KnowledgeSourceId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class IngestionCompleted:
     job_id: IngestionJobId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -221,6 +230,7 @@ class IngestionFailed:
     job_id: IngestionJobId
     error_message: str
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 # =============================================================================

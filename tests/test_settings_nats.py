@@ -423,4 +423,4 @@ class TestPublishSubscription:
 
         models = session.query(SettingsOutboxModel).all()
         for m in models:
-            assert m.published is True
+            assert m.published_at is not None

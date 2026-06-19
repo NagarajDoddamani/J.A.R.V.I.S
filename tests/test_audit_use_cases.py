@@ -117,14 +117,14 @@ class FakeAuditOutbox:
     def append(self, event: AuditEntryRecorded) -> None:
         self._events.append(event)
 
-    def mark_published(self, entry_id: AuditEntryId) -> None:
-        self._published.add(str(entry_id))
+    def mark_published(self, event_id: str) -> None:
+        self._published.add(event_id)
 
     def fetch_unpublished(self, limit: int = 50) -> list[AuditEntryRecorded]:
         return [
             e
             for e in self._events
-            if str(e.entry_id) not in self._published
+            if str(e.event_id) not in self._published
         ][:limit]
 
 

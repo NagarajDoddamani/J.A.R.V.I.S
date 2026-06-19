@@ -518,7 +518,8 @@ class TestSqlAlchemyAuditOutboxRepository:
             actor_id="alice",
         )
         repo.append(event)
-        repo.mark_published(event.entry_id)
+        unpublished = repo.fetch_unpublished()
+        repo.mark_published(str(unpublished[0].event_id))
         unpublished = repo.fetch_unpublished()
         assert len(unpublished) == 0
 
@@ -559,8 +560,9 @@ class TestSqlAlchemyAuditOutboxRepository:
             events.append(event)
             repo.append(event)
 
-        repo.mark_published(events[0].entry_id)
-        repo.mark_published(events[1].entry_id)
+        unpublished = repo.fetch_unpublished()
+        repo.mark_published(str(unpublished[0].event_id))
+        repo.mark_published(str(unpublished[1].event_id))
 
         unpublished = repo.fetch_unpublished()
         assert len(unpublished) == 1

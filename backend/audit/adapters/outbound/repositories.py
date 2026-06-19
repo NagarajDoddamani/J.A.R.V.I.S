@@ -244,7 +244,7 @@ class SqlAlchemyAuditOutboxRepository:
 
     def append(self, event: AuditEntryRecorded) -> None:
         model = AuditOutboxModel(
-            message_id=str(uuid4()),
+            message_id=str(event.event_id),
             aggregate_id=str(event.entry_id),
             subject=f"jarvis.audit.signal.{event.chain_name}.v1",
             payload={
@@ -263,9 +263,9 @@ class SqlAlchemyAuditOutboxRepository:
         self._session.add(model)
         self._session.flush()
 
-    def mark_published(self, entry_id: AuditEntryId) -> None:
+    def mark_published(self, event_id: str) -> None:
         stmt = select(AuditOutboxModel).where(
-            AuditOutboxModel.aggregate_id == str(entry_id),
+            AuditOutboxModel.message_id == event_id,
             AuditOutboxModel.published_at.is_(None),
         )
         models = list(self._session.scalars(stmt))
@@ -291,6 +291,7 @@ class SqlAlchemyAuditOutboxRepository:
     def _model_to_event(model: AuditOutboxModel) -> AuditEntryRecorded:
         payload = model.payload
         return AuditEntryRecorded(
+            event_id=UUID(model.message_id),
             entry_id=AuditEntryId(value=UUID(model.aggregate_id)),
             chain_name=payload["chain_name"],
             action=payload["action"],

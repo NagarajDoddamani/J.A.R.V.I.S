@@ -170,9 +170,11 @@ class MemoryOutboxMapperImpl:
             raise ValueError(f"Unknown event_type: {dto.event_type}")
         payload = json.loads(dto.payload) if dto.payload else {}
         aggregate_uuid = UUID(dto.aggregate_id)
+        event_uuid = UUID(dto.event_id)
 
         if event_cls is MemoryCreated:
             return MemoryCreated(
+                event_id=event_uuid,
                 memory_id=MemoryId(value=aggregate_uuid),
                 consent_id=ConsentId(value=UUID(payload["consent_id"])),
                 category=MemoryCategory(payload["category"]),
@@ -183,41 +185,48 @@ class MemoryOutboxMapperImpl:
             )
         if event_cls is MemoryUpdated:
             return MemoryUpdated(
+                event_id=event_uuid,
                 memory_id=MemoryId(value=aggregate_uuid),
                 revision=payload["revision"],
                 occurred_at=dto.occurred_at,
             )
         if event_cls is MemoryDeleted:
             return MemoryDeleted(
+                event_id=event_uuid,
                 memory_id=MemoryId(value=aggregate_uuid),
                 revision=payload["revision"],
                 occurred_at=dto.occurred_at,
             )
         if event_cls is MemoryRetentionExpired:
             return MemoryRetentionExpired(
+                event_id=event_uuid,
                 memory_id=MemoryId(value=aggregate_uuid),
                 revision=payload["revision"],
                 occurred_at=dto.occurred_at,
             )
         if event_cls is MemoryPurgeScheduled:
             return MemoryPurgeScheduled(
+                event_id=event_uuid,
                 memory_id=MemoryId(value=aggregate_uuid),
                 revision=payload["revision"],
                 occurred_at=dto.occurred_at,
             )
         if event_cls is MemoryPurged:
             return MemoryPurged(
+                event_id=event_uuid,
                 memory_id=MemoryId(value=aggregate_uuid),
                 revision=payload["revision"],
                 occurred_at=dto.occurred_at,
             )
         if event_cls is ConsentGranted:
             return ConsentGranted(
+                event_id=event_uuid,
                 consent_id=ConsentId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is ConsentRevoked:
             return ConsentRevoked(
+                event_id=event_uuid,
                 consent_id=ConsentId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )

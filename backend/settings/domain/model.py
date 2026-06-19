@@ -93,6 +93,7 @@ class SettingUpdated:
     new_value: Any
     category: SettingCategory
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -102,6 +103,7 @@ class SettingsReset:
     profile_id: SettingId
     previous_count: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 class SettingsProfile:

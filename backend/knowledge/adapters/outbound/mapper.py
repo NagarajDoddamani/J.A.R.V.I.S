@@ -197,9 +197,11 @@ class KnowledgeOutboxMapperImpl:
             raise ValueError(f"Unknown event_type: {dto.event_type}")
         payload = json.loads(dto.payload) if dto.payload else {}
         aggregate_uuid = UUID(dto.aggregate_id)
+        event_uuid = UUID(dto.event_id)
 
         if event_cls is KnowledgeSourceRegistered:
             return KnowledgeSourceRegistered(
+                event_id=event_uuid,
                 source_id=KnowledgeSourceId(value=aggregate_uuid),
                 name=payload.get("name", ""),
                 source_type=SourceType(payload.get("source_type", "file")),
@@ -209,11 +211,13 @@ class KnowledgeOutboxMapperImpl:
             )
         if event_cls is KnowledgeSourceDeleted:
             return KnowledgeSourceDeleted(
+                event_id=event_uuid,
                 source_id=KnowledgeSourceId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is DocumentIngested:
             return DocumentIngested(
+                event_id=event_uuid,
                 document_id=DocumentId(value=aggregate_uuid),
                 source_id=KnowledgeSourceId(value=UUID(payload["source_id"])),
                 title=payload.get("title", ""),
@@ -223,16 +227,19 @@ class KnowledgeOutboxMapperImpl:
             )
         if event_cls is DocumentIndexed:
             return DocumentIndexed(
+                event_id=event_uuid,
                 document_id=DocumentId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is DocumentDeleted:
             return DocumentDeleted(
+                event_id=event_uuid,
                 document_id=DocumentId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is ChunkCreated:
             return ChunkCreated(
+                event_id=event_uuid,
                 chunk_id=ChunkId(value=aggregate_uuid),
                 document_id=DocumentId(value=UUID(payload["document_id"])),
                 chunk_index=ChunkIndex(value=payload.get("chunk_index", 0)),
@@ -240,22 +247,26 @@ class KnowledgeOutboxMapperImpl:
             )
         if event_cls is ReindexRequested:
             return ReindexRequested(
+                event_id=event_uuid,
                 source_id=KnowledgeSourceId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is IngestionStarted:
             return IngestionStarted(
+                event_id=event_uuid,
                 job_id=IngestionJobId(value=aggregate_uuid),
                 source_id=KnowledgeSourceId(value=UUID(payload["source_id"])),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is IngestionCompleted:
             return IngestionCompleted(
+                event_id=event_uuid,
                 job_id=IngestionJobId(value=aggregate_uuid),
                 occurred_at=dto.occurred_at,
             )
         if event_cls is IngestionFailed:
             return IngestionFailed(
+                event_id=event_uuid,
                 job_id=IngestionJobId(value=aggregate_uuid),
                 error_message=payload.get("error_message", ""),
                 occurred_at=dto.occurred_at,

@@ -632,7 +632,8 @@ class TestOutboxAllEvents:
         )
         outbox_adapter.append(event)
         session.flush()
-        outbox_adapter.mark_published(str(mid))
+        fetched = outbox_adapter.fetch_unpublished()
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished()
         assert len(remaining) == 0
 

@@ -81,3 +81,8 @@ class SecretDetectedError(NotificationDomainError):
     def __init__(self, field: str) -> None:
         super().__init__(f"Notification content must not contain secrets: {field}")
         self.field = field
+
+
+class ActionNotFoundError(NotificationDomainError):
+    def __init__(self, action_id: str) -> None:
+        super().__init__(f"Action not found: {action_id}")

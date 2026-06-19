@@ -160,6 +160,7 @@ class MemoryCreated:
     source_id: str | None
     sensitivity: str
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -167,6 +168,7 @@ class MemoryUpdated:
     memory_id: MemoryId
     revision: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -174,6 +176,7 @@ class MemoryDeleted:
     memory_id: MemoryId
     revision: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -181,6 +184,7 @@ class MemoryRetentionExpired:
     memory_id: MemoryId
     revision: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -188,6 +192,7 @@ class MemoryPurgeScheduled:
     memory_id: MemoryId
     revision: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
@@ -195,18 +200,21 @@ class MemoryPurged:
     memory_id: MemoryId
     revision: int
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class ConsentGranted:
     consent_id: ConsentId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 @dataclass(frozen=True)
 class ConsentRevoked:
     consent_id: ConsentId
     occurred_at: datetime
+    event_id: UUID = field(default_factory=uuid4)
 
 
 # =============================================================================

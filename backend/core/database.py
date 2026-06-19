@@ -36,5 +36,9 @@ def get_db() -> Generator[Session, None, None]:
     db = create_session()
     try:
         yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()

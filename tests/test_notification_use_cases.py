@@ -332,10 +332,12 @@ def create_action_use_case(
 @pytest.fixture
 def invoke_action_use_case(
     fake_action_repo: FakeNotificationActionRepository,
+    fake_notification_repo: FakeNotificationRepository,
     fake_outbox: FakeNotificationOutbox,
 ) -> InvokeActionUseCase:
     return InvokeActionUseCase(
         action_repo=fake_action_repo,
+        notification_repo=fake_notification_repo,
         outbox=fake_outbox,
     )
 
@@ -1570,6 +1572,7 @@ class TestUseCaseIntegration:
         )
         invoke_action = InvokeActionUseCase(
             action_repo=fake_action_repo,
+            notification_repo=fake_notification_repo,
             outbox=fake_outbox,
         )
 
@@ -1656,6 +1659,7 @@ class TestUseCaseIntegration:
         )
         invoke_action = InvokeActionUseCase(
             action_repo=fake_action_repo,
+            notification_repo=fake_notification_repo,
             outbox=fake_outbox,
         )
 

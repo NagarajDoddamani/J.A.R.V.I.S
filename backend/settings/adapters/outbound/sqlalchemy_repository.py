@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
-from uuid import uuid4
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
@@ -196,16 +196,21 @@ class SqlAlchemySettingsOutboxAdapter:
 
     def append(self, event: SettingUpdated | SettingsReset) -> None:
         dto = self._mapper.event_to_dto(event)
+        payload = json.dumps({
+            "profile_id": dto.profile_id,
+            "key": dto.key,
+            "old_value": dto.old_value,
+            "new_value": dto.new_value,
+            "category": dto.category,
+        })
         model = SettingsOutboxModel(
-            event_id=str(uuid4()),
-            profile_id=dto.profile_id,
-            event_type=dto.event_type,
-            key=dto.key,
-            old_value=dto.old_value,
-            new_value=dto.new_value,
-            category=dto.category,
-            occurred_at=dto.occurred_at,
-            published=False,
+            message_id=dto.event_id,
+            aggregate_id=dto.profile_id,
+            subject=dto.event_type,
+            created_at=dto.occurred_at,
+            published_at=None,
+            payload=payload,
+            correlation_id=dto.event_id,
         )
         self._session.add(model)
         self._session.flush()
@@ -215,25 +220,22 @@ class SqlAlchemySettingsOutboxAdapter:
     ) -> list[SettingUpdated | SettingsReset]:
         stmt = (
             select(SettingsOutboxModel)
-            .where(SettingsOutboxModel.published == False)  # noqa: E712
-            .order_by(SettingsOutboxModel.occurred_at.asc())
+            .where(SettingsOutboxModel.published_at.is_(None))
+            .order_by(SettingsOutboxModel.created_at.asc())
             .limit(limit)
         )
         models = list(self._session.scalars(stmt))
         return [self._from_model(m) for m in models]
 
     def mark_published(self, event_id: str) -> None:
+        from datetime import datetime, timezone
         stmt = (
             update(SettingsOutboxModel)
-            .where(
-                SettingsOutboxModel.profile_id == event_id,
-                SettingsOutboxModel.published == False,  # noqa: E712
-            )
-            .values(published=True)
+            .where(SettingsOutboxModel.message_id == event_id)
+            .values(published_at=datetime.now(timezone.utc))
         )
-        result = self._session.execute(stmt)
-        if result.rowcount > 0:
-            self._session.flush()
+        self._session.execute(stmt)
+        self._session.flush()
 
     @staticmethod
     def _from_model(
@@ -246,19 +248,24 @@ class SqlAlchemySettingsOutboxAdapter:
             SettingUpdated as SettingUpdatedEvent,
         )
 
-        pid = SettingId(value=__import__("uuid", fromlist=["UUID"]).UUID(model.profile_id))
-        if model.event_type == "setting_updated":
+        from uuid import UUID
+
+        pdata = json.loads(model.payload) if model.payload else {}
+        pid = SettingId(value=UUID(pdata.get("profile_id", "")))
+        if model.subject == "setting_updated":
             return SettingUpdatedEvent(
                 profile_id=pid,
-                key=model.key or "",
-                old_value=model.old_value,
-                new_value=model.new_value,
-                category=SettingCategory(model.category) if model.category else SettingCategory.UI,
-                occurred_at=model.occurred_at,
+                key=pdata.get("key", ""),
+                old_value=pdata.get("old_value"),
+                new_value=pdata.get("new_value"),
+                category=SettingCategory(pdata.get("category", "ui")) if pdata.get("category") else SettingCategory.UI,
+                occurred_at=model.created_at,
+                event_id=UUID(model.message_id),
             )
-        previous_count = int(model.old_value) if model.old_value else 0
+        previous_count = int(pdata.get("old_value", 0))
         return SettingsResetEvent(
             profile_id=pid,
             previous_count=previous_count,
-            occurred_at=model.occurred_at,
+            occurred_at=model.created_at,
+            event_id=UUID(model.message_id),
         )

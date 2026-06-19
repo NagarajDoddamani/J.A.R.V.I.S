@@ -355,7 +355,7 @@ class TestActionLifecycle:
         )
         assert create_resp.label == "OK"
 
-        invoker = InvokeActionUseCase(action_repo, outbox)
+        invoker = InvokeActionUseCase(action_repo=action_repo, notification_repo=notif_repo, outbox=outbox)
         invoke_resp = invoker.execute(InvokeActionRequest(action_id=create_resp.action_id))
         assert invoke_resp.callback_name == "cb"
 
@@ -397,7 +397,7 @@ class TestActionLifecycle:
         creator = CreateActionUseCase(notif_repo, action_repo)
         cr = creator.execute(CreateActionRequest(notification_id=nid, label="X", callback_name="y"))
 
-        invoker = InvokeActionUseCase(action_repo, outbox)
+        invoker = InvokeActionUseCase(action_repo=action_repo, notification_repo=notif_repo, outbox=outbox)
         invoker.execute(InvokeActionRequest(action_id=cr.action_id))
 
         unpublished = outbox.fetch_unpublished()
@@ -607,7 +607,7 @@ class TestOutboxLifecycle:
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 2
 
-        outbox.mark_published(str(e1.notification_id))
+        outbox.mark_published(str(unpublished[0].event_id))
         session.flush()
 
         remaining = outbox.fetch_unpublished()
@@ -624,7 +624,7 @@ class TestOutboxLifecycle:
 
         all_events = outbox.fetch_unpublished(limit=10)
         for e in all_events:
-            outbox.mark_published(str(e.notification_id))
+            outbox.mark_published(str(e.event_id))
         session.flush()
 
         remaining = outbox.fetch_unpublished()
@@ -639,9 +639,10 @@ class TestOutboxLifecycle:
         outbox.append(event)
         session.commit()
 
-        outbox.mark_published(str(event.notification_id))
-        outbox.mark_published(str(event.notification_id))
-        outbox.mark_published(str(event.notification_id))
+        fetched = outbox.fetch_unpublished()
+        outbox.mark_published(str(fetched[0].event_id))
+        outbox.mark_published(str(fetched[0].event_id))
+        outbox.mark_published(str(fetched[0].event_id))
         session.flush()
 
         remaining = outbox.fetch_unpublished()
@@ -1116,7 +1117,7 @@ class TestEventCoverage:
         for e in unpublished:
             if isinstance(e, type(event)):
                 from backend.notification.nats import _get_aggregate_id
-                outbox.mark_published(_get_aggregate_id(e))
+                outbox.mark_published(str(e.event_id))
         session.flush()
 
         remaining = outbox.fetch_unpublished()

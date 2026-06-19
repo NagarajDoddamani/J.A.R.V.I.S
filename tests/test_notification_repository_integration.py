@@ -498,7 +498,7 @@ class TestOutboxAdapterIntegration:
         unpublished_before = outbox_adapter.fetch_unpublished()
         assert len(unpublished_before) == 1
 
-        outbox_adapter.mark_published(str(nid))
+        outbox_adapter.mark_published(str(unpublished_before[0].event_id))
 
         unpublished_after = outbox_adapter.fetch_unpublished()
         assert len(unpublished_after) == 0
@@ -513,8 +513,9 @@ class TestOutboxAdapterIntegration:
             NotificationShown,
         )
         outbox_adapter.append(NotificationShown(notification_id=nid, occurred_at=now))
-        outbox_adapter.mark_published(str(nid))
-        outbox_adapter.mark_published(str(nid))
+        fetched = outbox_adapter.fetch_unpublished()
+        outbox_adapter.mark_published(str(fetched[0].event_id))
+        outbox_adapter.mark_published(str(fetched[0].event_id))
 
         unpublished = outbox_adapter.fetch_unpublished()
         assert len(unpublished) == 0
@@ -550,7 +551,8 @@ class TestOutboxAdapterIntegration:
         outbox_adapter.append(NotificationShown(notification_id=nid1, occurred_at=now))
         outbox_adapter.append(NotificationShown(notification_id=nid2, occurred_at=now))
 
-        outbox_adapter.mark_published(str(nid1))
+        unpublished = outbox_adapter.fetch_unpublished()
+        outbox_adapter.mark_published(str(unpublished[0].event_id))
 
         remaining = outbox_adapter.fetch_unpublished()
         assert len(remaining) == 1
@@ -741,8 +743,9 @@ class TestFullPersistenceLifecycle:
         before = outbox_adapter.fetch_unpublished()
         assert len(before) == 2
 
-        # Mark first as published
-        outbox_adapter.mark_published(str(nid))
+        # Mark both as published (each event has its own event_id)
+        outbox_adapter.mark_published(str(before[0].event_id))
+        outbox_adapter.mark_published(str(before[1].event_id))
 
         after = outbox_adapter.fetch_unpublished()
         assert len(after) == 0

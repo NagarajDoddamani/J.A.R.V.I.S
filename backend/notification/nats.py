@@ -95,12 +95,11 @@ async def publish_notification_outbox_events(
                     envelope, separators=(",", ":")
                 ).encode("utf-8")
                 await js.publish(subject, serialized)
-                aggregate_id = _get_aggregate_id(event)
-                repo.mark_published(aggregate_id)
+                repo.mark_published(str(event.event_id))
                 logger.info(
                     "Notification outbox event published",
                     subject=subject,
-                    aggregate_id=aggregate_id,
+                    event_id=str(event.event_id),
                 )
             if db is not None:
                 db.commit()

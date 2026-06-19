@@ -8,6 +8,12 @@ from backend.audit.nats import publish_outbox_events
 from backend.knowledge.nats import publish_knowledge_outbox_events
 from backend.memory.nats import publish_memory_outbox_events
 from backend.notification.nats import publish_notification_outbox_events
+from backend.planner.nats import publish_planner_outbox_events
+from backend.automation.nats import publish_automation_outbox_events
+from backend.policy.nats import publish_policy_outbox_events
+from backend.orchestrator.nats import publish_orchestrator_outbox_events
+from backend.research.nats import publish_research_outbox_events
+from backend.agent.nats import publish_agent_outbox_events
 from backend.settings.nats import publish_settings_outbox_events
 from backend.core.config import settings
 from backend.core.logging import logger, setup_logging
@@ -76,6 +82,54 @@ async def lifespan(app: FastAPI):
             outbox_tasks.append(
                 asyncio.create_task(
                     publish_notification_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_planner_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_research_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_orchestrator_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_automation_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_policy_outbox_events(
+                        nats_manager.js,
+                        interval_seconds=5.0,
+                    )
+                )
+            )
+            outbox_tasks.append(
+                asyncio.create_task(
+                    publish_agent_outbox_events(
                         nats_manager.js,
                         interval_seconds=5.0,
                     )

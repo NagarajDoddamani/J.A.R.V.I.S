@@ -608,7 +608,8 @@ class TestKnowledgeOutboxAdapterIntegration:
             occurred_at=NOW,
         )
         outbox_adapter.append(event)
-        outbox_adapter.mark_published(event.aggregate_id if hasattr(event, 'aggregate_id') else str(event.source_id))
+        fetched = outbox_adapter.fetch_unpublished()
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished()
         assert len(remaining) == 0
 
@@ -627,7 +628,8 @@ class TestKnowledgeOutboxAdapterIntegration:
             occurred_at=NOW,
         )
         outbox_adapter.append(event)
-        outbox_adapter.mark_published(sid)
+        fetched = outbox_adapter.fetch_unpublished()
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished()
         assert len(remaining) == 0
 
@@ -646,8 +648,9 @@ class TestKnowledgeOutboxAdapterIntegration:
             occurred_at=NOW,
         )
         outbox_adapter.append(event)
-        outbox_adapter.mark_published(sid)
-        outbox_adapter.mark_published(sid)
+        fetched = outbox_adapter.fetch_unpublished()
+        outbox_adapter.mark_published(str(fetched[0].event_id))
+        outbox_adapter.mark_published(str(fetched[0].event_id))
         remaining = outbox_adapter.fetch_unpublished()
         assert len(remaining) == 0
 

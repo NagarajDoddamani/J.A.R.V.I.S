@@ -399,11 +399,11 @@ class StubAuditOutbox:
         self._published: set[str] = set()
 
     def append(self, event: AuditEntryRecorded) -> None:
-        key = str(event.entry_id)
+        key = str(event.event_id)
         self._events[key] = event
 
-    def mark_published(self, entry_id: AuditEntryId) -> None:
-        self._published.add(str(entry_id))
+    def mark_published(self, event_id: str) -> None:
+        self._published.add(event_id)
 
     def fetch_unpublished(
         self, limit: int = 50
@@ -437,7 +437,7 @@ class TestAuditOutboxPort:
         entry = _make_entry()
         event = _make_domain_event(entry)
         outbox.append(event)
-        outbox.mark_published(entry.entry_id)
+        outbox.mark_published(str(event.event_id))
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 0
 
@@ -477,8 +477,9 @@ class TestAuditOutboxPort:
             outbox.append(_make_domain_event(e))
 
         # Publish only the first two
-        outbox.mark_published(entries[0].entry_id)
-        outbox.mark_published(entries[1].entry_id)
+        events_list = outbox.fetch_unpublished()
+        outbox.mark_published(str(events_list[0].event_id))
+        outbox.mark_published(str(events_list[1].event_id))
 
         unpublished = outbox.fetch_unpublished()
         assert len(unpublished) == 1

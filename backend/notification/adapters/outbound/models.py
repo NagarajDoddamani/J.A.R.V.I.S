@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Integer, JSON, String, Text, Uuid
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -63,13 +63,20 @@ class NotificationOutboxModel(Base):
     __tablename__ = "outbox"
     __table_args__ = _schema("outbox")
 
-    event_id: Mapped[str] = mapped_column(String(256), primary_key=True)
-    event_type: Mapped[str] = mapped_column(String(32), nullable=False)
-    aggregate_id: Mapped[str] = mapped_column(String(256), nullable=False)
-    occurred_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
+    message_id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True)
+    subject: Mapped[str] = mapped_column(String(512), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(tz=timezone.utc),
     )
-    payload: Mapped[str | None] = mapped_column(Text, nullable=True)
-    published: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=False
+    published_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
     )
+    headers: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    correlation_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True)
+    causation_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True)
+    aggregate_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    payload: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)

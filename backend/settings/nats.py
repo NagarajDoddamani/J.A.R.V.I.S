@@ -71,11 +71,11 @@ async def publish_settings_outbox_events(
                     envelope, separators=(",", ":")
                 ).encode("utf-8")
                 await js.publish(subject, serialized)
-                repo.mark_published(profile_id)
+                repo.mark_published(str(event.event_id))
                 logger.info(
                     "Settings outbox event published",
                     subject=subject,
-                    profile_id=profile_id,
+                    event_id=str(event.event_id),
                 )
             if db is not None:
                 db.commit()
