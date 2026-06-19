@@ -152,55 +152,55 @@ class TestNatsSubjectMap:
     def test_subject_patterns(self) -> None:
         assert (
             _NATS_SUBJECT_MAP[OrchestrationCreated]
-            == "jarvis.orchestrator.event.created.v1"
+            == "jarvis.event.orchestrator.created.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[OrchestrationPlanningStarted]
-            == "jarvis.orchestrator.event.planning_started.v1"
+            == "jarvis.event.orchestrator.planning_started.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[OrchestrationResearchStarted]
-            == "jarvis.orchestrator.event.research_started.v1"
+            == "jarvis.event.orchestrator.research_started.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[OrchestrationExecutionStarted]
-            == "jarvis.orchestrator.event.execution_started.v1"
+            == "jarvis.event.orchestrator.execution_started.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[OrchestrationCompleted]
-            == "jarvis.orchestrator.event.completed.v1"
+            == "jarvis.event.orchestrator.completed.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[OrchestrationFailed]
-            == "jarvis.orchestrator.event.failed.v1"
+            == "jarvis.event.orchestrator.failed.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[OrchestrationCancelled]
-            == "jarvis.orchestrator.event.cancelled.v1"
+            == "jarvis.event.orchestrator.cancelled.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[WorkflowCreated]
-            == "jarvis.orchestrator.event.workflow_created.v1"
+            == "jarvis.event.orchestrator.workflow_created.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[WorkflowCompleted]
-            == "jarvis.orchestrator.event.workflow_completed.v1"
+            == "jarvis.event.orchestrator.workflow_completed.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[WorkflowFailed]
-            == "jarvis.orchestrator.event.workflow_failed.v1"
+            == "jarvis.event.orchestrator.workflow_failed.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[WorkflowStepStarted]
-            == "jarvis.orchestrator.event.step_started.v1"
+            == "jarvis.event.orchestrator.step_started.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[WorkflowStepCompleted]
-            == "jarvis.orchestrator.event.step_completed.v1"
+            == "jarvis.event.orchestrator.step_completed.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[WorkflowStepFailed]
-            == "jarvis.orchestrator.event.step_failed.v1"
+            == "jarvis.event.orchestrator.step_failed.v1"
         )
 
 
@@ -327,7 +327,7 @@ class TestPublishOrchestratorOutboxEvents:
         )
 
         js.publish.assert_called_once_with(
-            "jarvis.orchestrator.event.created.v1",
+            "jarvis.event.orchestrator.created.v1",
             json.dumps(
                 {
                     "event_id": str(event.event_id),
@@ -360,7 +360,7 @@ class TestPublishOrchestratorOutboxEvents:
 
         js.publish.assert_called_once()
         call_args = js.publish.call_args[0]
-        assert call_args[0] == "jarvis.orchestrator.event.failed.v1"
+        assert call_args[0] == "jarvis.event.orchestrator.failed.v1"
         payload = json.loads(call_args[1])
         assert payload["failure_reason"] == "error"
 
@@ -381,7 +381,7 @@ class TestPublishOrchestratorOutboxEvents:
 
         js.publish.assert_called_once()
         call_args = js.publish.call_args[0]
-        assert call_args[0] == "jarvis.orchestrator.event.workflow_created.v1"
+        assert call_args[0] == "jarvis.event.orchestrator.workflow_created.v1"
         payload = json.loads(call_args[1])
         assert payload["goal"] == "wf goal"
 
@@ -402,7 +402,7 @@ class TestPublishOrchestratorOutboxEvents:
 
         js.publish.assert_called_once()
         call_args = js.publish.call_args[0]
-        assert call_args[0] == "jarvis.orchestrator.event.step_completed.v1"
+        assert call_args[0] == "jarvis.event.orchestrator.step_completed.v1"
         payload = json.loads(call_args[1])
         assert payload["result"] == "done"
 
@@ -423,7 +423,7 @@ class TestPublishOrchestratorOutboxEvents:
 
         js.publish.assert_called_once()
         call_args = js.publish.call_args[0]
-        assert call_args[0] == "jarvis.orchestrator.event.step_failed.v1"
+        assert call_args[0] == "jarvis.event.orchestrator.step_failed.v1"
         payload = json.loads(call_args[1])
         assert payload["failure_reason"] == "step error"
 

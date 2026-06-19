@@ -45,18 +45,18 @@ _EVENT_TYPE_MAP: dict[type, str] = {
 }
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    AgentCreated: "jarvis.agent.event.agent_created.v1",
-    AgentActivated: "jarvis.agent.event.agent_activated.v1",
-    AgentPaused: "jarvis.agent.event.agent_paused.v1",
-    AgentDisabled: "jarvis.agent.event.agent_disabled.v1",
-    AgentTaskCreated: "jarvis.agent.event.agent_task_created.v1",
-    AgentTaskStarted: "jarvis.agent.event.agent_task_started.v1",
-    AgentTaskCompleted: "jarvis.agent.event.agent_task_completed.v1",
-    AgentTaskFailed: "jarvis.agent.event.agent_task_failed.v1",
-    AgentTaskCancelled: "jarvis.agent.event.agent_task_cancelled.v1",
-    AgentExecutionStarted: "jarvis.agent.event.agent_execution_started.v1",
-    AgentExecutionCompleted: "jarvis.agent.event.agent_execution_completed.v1",
-    AgentExecutionFailed: "jarvis.agent.event.agent_execution_failed.v1",
+    AgentCreated: "jarvis.event.agent.agent_created.v1",
+    AgentActivated: "jarvis.event.agent.agent_activated.v1",
+    AgentPaused: "jarvis.event.agent.agent_paused.v1",
+    AgentDisabled: "jarvis.event.agent.agent_disabled.v1",
+    AgentTaskCreated: "jarvis.event.agent.agent_task_created.v1",
+    AgentTaskStarted: "jarvis.event.agent.agent_task_started.v1",
+    AgentTaskCompleted: "jarvis.event.agent.agent_task_completed.v1",
+    AgentTaskFailed: "jarvis.event.agent.agent_task_failed.v1",
+    AgentTaskCancelled: "jarvis.event.agent.agent_task_cancelled.v1",
+    AgentExecutionStarted: "jarvis.event.agent.agent_execution_started.v1",
+    AgentExecutionCompleted: "jarvis.event.agent.agent_execution_completed.v1",
+    AgentExecutionFailed: "jarvis.event.agent.agent_execution_failed.v1",
 }
 
 
@@ -153,7 +153,7 @@ async def publish_agent_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.agent.event.unknown.v1"
+                    type(event), "jarvis.event.agent.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

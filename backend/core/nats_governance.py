@@ -338,8 +338,8 @@ COMMAND_CONSUMER_SPECS: Final[tuple[ConsumerSpec, ...]] = tuple(
     ConsumerSpec(
         stream=STREAM_COMMANDS,
         name=f"consumer-{domain}-v1",
-        description=f"Owning consumer for jarvis.command.{domain}.*.v1",
-        filter_subjects=(f"jarvis.command.{domain}.>.v1",),
+        description=f"Owning consumer for jarvis.command.{domain}.>",
+        filter_subjects=(f"jarvis.command.{domain}.>",),
     )
     for domain in sorted(ALLOWED_COMMAND_DOMAINS)
 )

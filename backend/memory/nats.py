@@ -45,14 +45,14 @@ _EVENT_TYPE_MAP: dict[type, str] = {
 }
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    MemoryCreated: "jarvis.memory.event.memory_created.v1",
-    MemoryUpdated: "jarvis.memory.event.memory_updated.v1",
-    MemoryDeleted: "jarvis.memory.event.memory_deleted.v1",
-    MemoryRetentionExpired: "jarvis.memory.event.memory_retention_expired.v1",
-    MemoryPurgeScheduled: "jarvis.memory.event.memory_purge_scheduled.v1",
-    MemoryPurged: "jarvis.memory.event.memory_purged.v1",
-    ConsentGranted: "jarvis.memory.event.consent_granted.v1",
-    ConsentRevoked: "jarvis.memory.event.consent_revoked.v1",
+    MemoryCreated: "jarvis.event.memory.memory_created.v1",
+    MemoryUpdated: "jarvis.event.memory.memory_updated.v1",
+    MemoryDeleted: "jarvis.event.memory.memory_deleted.v1",
+    MemoryRetentionExpired: "jarvis.event.memory.memory_retention_expired.v1",
+    MemoryPurgeScheduled: "jarvis.event.memory.memory_purge_scheduled.v1",
+    MemoryPurged: "jarvis.event.memory.memory_purged.v1",
+    ConsentGranted: "jarvis.event.memory.consent_granted.v1",
+    ConsentRevoked: "jarvis.event.memory.consent_revoked.v1",
 }
 
 
@@ -114,7 +114,7 @@ async def publish_memory_outbox_events(
             repo = outbox or SqlAlchemyMemoryOutboxAdapter(db)  # type: ignore[arg-type]
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
-                subject = _NATS_SUBJECT_MAP.get(type(event), "jarvis.memory.event.unknown.v1")
+                subject = _NATS_SUBJECT_MAP.get(type(event), "jarvis.event.memory.unknown.v1")
                 envelope = _build_envelope(event)
                 serialized = json.dumps(
                     envelope, separators=(",", ":")

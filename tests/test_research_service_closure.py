@@ -131,14 +131,14 @@ class TestEventCompleteness:
 
         assert len(_NATS_SUBJECT_MAP) == 7
         for subject in _NATS_SUBJECT_MAP.values():
-            assert subject.startswith("jarvis.research.event.")
+            assert subject.startswith("jarvis.event.research.")
             assert subject.endswith(".v1")
 
     def test_event_subjects_follow_convention(self) -> None:
         from backend.research.nats import _NATS_SUBJECT_MAP
 
         for event_cls, subject in _NATS_SUBJECT_MAP.items():
-            assert subject.startswith("jarvis.research.event.")
+            assert subject.startswith("jarvis.event.research.")
             assert subject.endswith(".v1")
 
 

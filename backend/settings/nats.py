@@ -25,7 +25,7 @@ async def publish_settings_outbox_events(
 
     Runs in the application lifespan. Creates its own database session
     per iteration. Polls unpublished events, publishes each as a NATS
-    envelope on ``jarvis.settings.event.<event_type>.v1``, then marks
+    envelope on ``jarvis.event.settings.<event_type>.v1``, then marks
     them published.
 
     When *max_iterations* is > 0 the loop exits after that many
@@ -44,7 +44,7 @@ async def publish_settings_outbox_events(
                     if hasattr(event, "key")
                     else "settings_reset"
                 )
-                subject = f"jarvis.settings.event.{event_type}.v1"
+                subject = f"jarvis.event.settings.{event_type}.v1"
                 profile_id = str(event.profile_id)
                 envelope: dict[str, object] = {
                     "event_id": profile_id,

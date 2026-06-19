@@ -181,7 +181,7 @@ class TestPublishSettingsOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject.startswith("jarvis.settings.event.")
+        assert subject.startswith("jarvis.event.settings.")
 
     @pytest.mark.asyncio
     async def test_payload_is_json_bytes(
@@ -364,7 +364,7 @@ class TestPublishSubscription:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.settings.event.setting_updated.v1"
+        assert subject == "jarvis.event.settings.setting_updated.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_settings_reset(self, session, mock_js) -> None:
@@ -386,7 +386,7 @@ class TestPublishSubscription:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.settings.event.settings_reset.v1"
+        assert subject == "jarvis.event.settings.settings_reset.v1"
 
     @pytest.mark.asyncio
     async def test_mark_published_on_single_item(

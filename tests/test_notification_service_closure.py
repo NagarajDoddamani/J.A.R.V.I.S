@@ -144,7 +144,7 @@ class TestEventCompleteness:
     def test_nats_subjects_follow_convention(self) -> None:
         from backend.notification.nats import _NATS_SUBJECT_MAP
         for event_cls, subject in _NATS_SUBJECT_MAP.items():
-            assert subject.startswith("jarvis.notification.event.")
+            assert subject.startswith("jarvis.event.notification.")
             assert subject.endswith(".v1")
 
     def test_event_types_are_disjoint(self) -> None:

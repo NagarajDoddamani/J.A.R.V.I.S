@@ -30,7 +30,7 @@ from tests.test_helpers import (  # noqa: E402  # isort:skip
 # ---------------------------------------------------------------------------
 
 
-REQUIRED_SERVICES = ("postgres", "redis", "qdrant", "nats", "ollama")
+REQUIRED_SERVICES = ("postgres", "redis", "qdrant", "nats")
 
 
 @pytest.mark.parametrize("service", REQUIRED_SERVICES)
@@ -116,7 +116,7 @@ def test_backend_service_depends_on_healthy_dependencies() -> None:
     block = service_block("backend")
     assert block, "backend service must be declared"
     assert "depends_on:" in block
-    for dep in ("postgres", "redis", "qdrant", "nats", "ollama"):
+    for dep in ("postgres", "redis", "qdrant", "nats"):
         assert f"      {dep}:" in block, (
             f"backend must depend on {dep}"
         )
@@ -152,5 +152,5 @@ def test_stateful_services_have_named_volumes() -> None:
 def test_persistent_volumes_declared() -> None:
     text = compose_text()
     assert "volumes:" in text
-    for name in ("postgres_data", "redis_data", "qdrant_data", "nats_data", "ollama_data"):
+    for name in ("postgres_data", "redis_data", "qdrant_data", "nats_data"):
         assert f"  {name}:" in text, f"persistent volume {name!r} must be declared"

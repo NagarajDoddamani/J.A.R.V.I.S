@@ -17,6 +17,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from backend.core.nats_governance import (  # noqa: E402
+    ALLOWED_COMMAND_DOMAINS,
+    COMMAND_CONSUMER_SPECS,
     NATS_MAX_PAYLOAD_BYTES,
     GovernanceError,
     command_subject,
@@ -201,3 +203,46 @@ def test_envelope_rejects_bad_actor_type() -> None:
     envelope["actor"]["type"] = "model"
     with pytest.raises(GovernanceError):
         validate_envelope(envelope, kind="command")
+
+
+# ---------------------------------------------------------------------------
+# Consumer subject validity
+# ---------------------------------------------------------------------------
+
+
+def test_all_consumer_filter_subjects_end_with_wildcard() -> None:
+    """NATS ``>`` wildcard MUST be the last token in a subject."""
+    for spec in COMMAND_CONSUMER_SPECS:
+        for subject in spec.filter_subjects:
+            assert subject.endswith(".>"), (
+                f"Consumer {spec.name!r} filter {subject!r} must end with '.>' "
+                f"(NATS requires '>' to be the terminal token)"
+            )
+            assert ">.>" not in subject, (
+                f"Consumer {spec.name!r} filter {subject!r} contains '>.>' "
+                f"(double wildcard)"
+            )
+
+
+def test_all_consumer_filter_subjects_have_valid_domain() -> None:
+    """Every consumer filter subject domain must be in ALLOWED_COMMAND_DOMAINS."""
+    for spec in COMMAND_CONSUMER_SPECS:
+        subject = spec.filter_subjects[0]
+        parts = subject.split(".")
+        # jarvis.command.<domain>.>
+        assert len(parts) >= 4, f"Subject {subject!r} has too few tokens"
+        domain = parts[2]
+        assert domain in ALLOWED_COMMAND_DOMAINS, (
+            f"Consumer {spec.name!r} domain {domain!r} not in allowed domains"
+        )
+
+
+def test_consumer_filter_subjects_match_stream_subjects() -> None:
+    """Every consumer filter subject must be a sub-pattern of its stream's subjects."""
+    for spec in COMMAND_CONSUMER_SPECS:
+        assert spec.stream == "JARVIS_COMMANDS_V1"
+        for subject in spec.filter_subjects:
+            assert subject.startswith("jarvis.command."), (
+                f"Consumer {spec.name!r} filter {subject!r} is outside "
+                f"jarvis.command.> stream coverage"
+            )

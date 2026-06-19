@@ -206,7 +206,7 @@ class TestPublishMemoryOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject.startswith("jarvis.memory.event.")
+        assert subject.startswith("jarvis.event.memory.")
 
     @pytest.mark.asyncio
     async def test_payload_is_json_bytes(
@@ -348,7 +348,7 @@ class TestPublishMemoryOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.memory.event.memory_created.v1"
+        assert subject == "jarvis.event.memory.memory_created.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_memory_updated(
@@ -372,7 +372,7 @@ class TestPublishMemoryOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.memory.event.memory_updated.v1"
+        assert subject == "jarvis.event.memory.memory_updated.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_memory_deleted(
@@ -396,7 +396,7 @@ class TestPublishMemoryOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.memory.event.memory_deleted.v1"
+        assert subject == "jarvis.event.memory.memory_deleted.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_consent_granted(
@@ -419,7 +419,7 @@ class TestPublishMemoryOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.memory.event.consent_granted.v1"
+        assert subject == "jarvis.event.memory.consent_granted.v1"
 
     @pytest.mark.asyncio
     async def test_creates_session_when_no_outbox_provided(

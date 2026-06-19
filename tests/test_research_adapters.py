@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -549,3 +550,61 @@ class TestResearchOutboxMapperImpl:
         )
         with pytest.raises(ValueError, match="unknown.type"):
             mapper.dto_to_event(dto)
+
+    def test_dto_to_event_with_dict_payload(
+        self, mapper: ResearchOutboxMapperImpl
+    ) -> None:
+        from backend.research.application.persistence.dto import (
+            ResearchOutboxStorageDTO,
+        )
+
+        dto = ResearchOutboxStorageDTO(
+            event_id="10000000-0000-0000-0000-000000000001",
+            event_type="research.requested",
+            aggregate_id="20000000-0000-0000-0000-000000000001",
+            occurred_at=NOW,
+            payload={
+                "query": "dict query",
+                "goal": "dict goal",
+                "priority": "critical",
+            },
+        )
+        event = mapper.dto_to_event(dto)
+        assert isinstance(event, ResearchRequested)
+        assert event.query == "dict query"
+        assert event.goal == "dict goal"
+        assert event.priority == "critical"
+
+    def test_dto_to_event_with_malformed_payload(
+        self, mapper: ResearchOutboxMapperImpl
+    ) -> None:
+        from backend.research.application.persistence.dto import (
+            ResearchOutboxStorageDTO,
+        )
+
+        dto = ResearchOutboxStorageDTO(
+            event_id="10000000-0000-0000-0000-000000000001",
+            event_type="research.requested",
+            aggregate_id="20000000-0000-0000-0000-000000000001",
+            occurred_at=NOW,
+            payload="not valid json",
+        )
+        with pytest.raises(json.JSONDecodeError):
+            mapper.dto_to_event(dto)
+
+    def test_dto_to_event_with_none_payload(
+        self, mapper: ResearchOutboxMapperImpl
+    ) -> None:
+        from backend.research.application.persistence.dto import (
+            ResearchOutboxStorageDTO,
+        )
+
+        dto = ResearchOutboxStorageDTO(
+            event_id="10000000-0000-0000-0000-000000000001",
+            event_type="research.started",
+            aggregate_id="00000000-0000-0000-0000-000000000001",
+            occurred_at=NOW,
+            payload=None,
+        )
+        event = mapper.dto_to_event(dto)
+        assert isinstance(event, ResearchStarted)

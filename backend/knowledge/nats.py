@@ -51,16 +51,16 @@ _EVENT_TYPE_MAP: dict[type, str] = {
 }
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    KnowledgeSourceRegistered: "jarvis.knowledge.event.source_registered.v1",
-    KnowledgeSourceDeleted: "jarvis.knowledge.event.source_deleted.v1",
-    DocumentIngested: "jarvis.knowledge.event.document_ingested.v1",
-    DocumentIndexed: "jarvis.knowledge.event.document_indexed.v1",
-    DocumentDeleted: "jarvis.knowledge.event.document_deleted.v1",
-    ChunkCreated: "jarvis.knowledge.event.chunk_created.v1",
-    ReindexRequested: "jarvis.knowledge.event.reindex_requested.v1",
-    IngestionStarted: "jarvis.knowledge.event.ingestion_started.v1",
-    IngestionCompleted: "jarvis.knowledge.event.ingestion_completed.v1",
-    IngestionFailed: "jarvis.knowledge.event.ingestion_failed.v1",
+    KnowledgeSourceRegistered: "jarvis.event.knowledge.source_registered.v1",
+    KnowledgeSourceDeleted: "jarvis.event.knowledge.source_deleted.v1",
+    DocumentIngested: "jarvis.event.knowledge.document_ingested.v1",
+    DocumentIndexed: "jarvis.event.knowledge.document_indexed.v1",
+    DocumentDeleted: "jarvis.event.knowledge.document_deleted.v1",
+    ChunkCreated: "jarvis.event.knowledge.chunk_created.v1",
+    ReindexRequested: "jarvis.event.knowledge.reindex_requested.v1",
+    IngestionStarted: "jarvis.event.knowledge.ingestion_started.v1",
+    IngestionCompleted: "jarvis.event.knowledge.ingestion_completed.v1",
+    IngestionFailed: "jarvis.event.knowledge.ingestion_failed.v1",
 }
 
 
@@ -126,7 +126,7 @@ async def publish_knowledge_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.knowledge.event.unknown.v1"
+                    type(event), "jarvis.event.knowledge.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

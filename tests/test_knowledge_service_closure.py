@@ -237,7 +237,7 @@ class TestEventAudit:
     def test_event_subjects_follow_convention(self) -> None:
         from backend.knowledge.nats import _NATS_SUBJECT_MAP
         for subject in _NATS_SUBJECT_MAP.values():
-            assert subject.startswith("jarvis.knowledge.event.")
+            assert subject.startswith("jarvis.event.knowledge.")
             assert subject.endswith(".v1")
 
 

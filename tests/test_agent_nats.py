@@ -69,15 +69,15 @@ class TestNatsSubjects:
     def test_subject_format(self) -> None:
         assert (
             _NATS_SUBJECT_MAP[AgentCreated]
-            == "jarvis.agent.event.agent_created.v1"
+            == "jarvis.event.agent.agent_created.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[AgentTaskCreated]
-            == "jarvis.agent.event.agent_task_created.v1"
+            == "jarvis.event.agent.agent_task_created.v1"
         )
         assert (
             _NATS_SUBJECT_MAP[AgentExecutionStarted]
-            == "jarvis.agent.event.agent_execution_started.v1"
+            == "jarvis.event.agent.agent_execution_started.v1"
         )
 
 
@@ -278,4 +278,4 @@ class TestPublishAgentOutboxEvents:
 
         call_args = js.publish.await_args
         assert call_args is not None
-        assert call_args[0][0] == "jarvis.agent.event.agent_created.v1"
+        assert call_args[0][0] == "jarvis.event.agent.agent_created.v1"

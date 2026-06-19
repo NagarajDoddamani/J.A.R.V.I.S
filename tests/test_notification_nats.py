@@ -186,7 +186,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject.startswith("jarvis.notification.event.")
+        assert subject.startswith("jarvis.event.notification.")
 
     @pytest.mark.asyncio
     async def test_payload_is_json_bytes(
@@ -307,7 +307,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.notification.event.created.v1"
+        assert subject == "jarvis.event.notification.created.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_notification_shown(
@@ -330,7 +330,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.notification.event.shown.v1"
+        assert subject == "jarvis.event.notification.shown.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_notification_acknowledged(
@@ -353,7 +353,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.notification.event.acknowledged.v1"
+        assert subject == "jarvis.event.notification.acknowledged.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_notification_dismissed(
@@ -376,7 +376,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.notification.event.dismissed.v1"
+        assert subject == "jarvis.event.notification.dismissed.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_notification_expired(
@@ -399,7 +399,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.notification.event.expired.v1"
+        assert subject == "jarvis.event.notification.expired.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_notification_action_invoked(
@@ -424,7 +424,7 @@ class TestPublishNotificationOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.notification.event.action_invoked.v1"
+        assert subject == "jarvis.event.notification.action_invoked.v1"
 
     @pytest.mark.asyncio
     async def test_creates_session_when_no_outbox_provided(

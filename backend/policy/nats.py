@@ -43,17 +43,17 @@ _EVENT_TYPE_MAP: dict[type, str] = {
 }
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    PolicyCreated: "jarvis.policy.event.policy_created.v1",
-    PolicyActivated: "jarvis.policy.event.policy_activated.v1",
-    PolicyDisabled: "jarvis.policy.event.policy_disabled.v1",
-    PolicyArchived: "jarvis.policy.event.policy_archived.v1",
-    PolicyRuleAdded: "jarvis.policy.event.rule_added.v1",
-    PolicyRuleRemoved: "jarvis.policy.event.rule_removed.v1",
-    PolicyRuleEnabled: "jarvis.policy.event.rule_enabled.v1",
-    PolicyRuleDisabled: "jarvis.policy.event.rule_disabled.v1",
-    PolicyEvaluationStarted: "jarvis.policy.event.evaluation_started.v1",
-    PolicyEvaluationCompleted: "jarvis.policy.event.evaluation_completed.v1",
-    PolicyEvaluationFailed: "jarvis.policy.event.evaluation_failed.v1",
+    PolicyCreated: "jarvis.event.policy.policy_created.v1",
+    PolicyActivated: "jarvis.event.policy.policy_activated.v1",
+    PolicyDisabled: "jarvis.event.policy.policy_disabled.v1",
+    PolicyArchived: "jarvis.event.policy.policy_archived.v1",
+    PolicyRuleAdded: "jarvis.event.policy.rule_added.v1",
+    PolicyRuleRemoved: "jarvis.event.policy.rule_removed.v1",
+    PolicyRuleEnabled: "jarvis.event.policy.rule_enabled.v1",
+    PolicyRuleDisabled: "jarvis.event.policy.rule_disabled.v1",
+    PolicyEvaluationStarted: "jarvis.event.policy.evaluation_started.v1",
+    PolicyEvaluationCompleted: "jarvis.event.policy.evaluation_completed.v1",
+    PolicyEvaluationFailed: "jarvis.event.policy.evaluation_failed.v1",
 }
 
 
@@ -140,7 +140,7 @@ async def publish_policy_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.policy.event.unknown.v1"
+                    type(event), "jarvis.event.policy.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

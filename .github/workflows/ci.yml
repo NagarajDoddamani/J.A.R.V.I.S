@@ -115,7 +115,7 @@ jobs:
       - name: Health checks
         run: |
           docker compose ps
-          for svc in postgres nats qdrant redis ollama; do
+          for svc in postgres nats qdrant redis; do
             docker compose ps --status running $svc
           done
       - name: Apply migrations

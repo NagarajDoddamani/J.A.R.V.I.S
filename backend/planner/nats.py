@@ -54,17 +54,17 @@ _EVENT_TYPE_MAP: dict[type, str] = {
 }
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    PlanCreated: "jarvis.planner.event.created.v1",
-    PlanApproved: "jarvis.planner.event.approved.v1",
-    PlanReady: "jarvis.planner.event.ready.v1",
-    PlanExecutionStarted: "jarvis.planner.event.execution_started.v1",
-    PlanCompleted: "jarvis.planner.event.completed.v1",
-    PlanFailed: "jarvis.planner.event.failed.v1",
-    PlanCancelled: "jarvis.planner.event.cancelled.v1",
-    TaskCreated: "jarvis.planner.event.task_created.v1",
-    TaskAssigned: "jarvis.planner.event.task_assigned.v1",
-    TaskCompleted: "jarvis.planner.event.task_completed.v1",
-    TaskFailed: "jarvis.planner.event.task_failed.v1",
+    PlanCreated: "jarvis.event.planner.created.v1",
+    PlanApproved: "jarvis.event.planner.approved.v1",
+    PlanReady: "jarvis.event.planner.ready.v1",
+    PlanExecutionStarted: "jarvis.event.planner.execution_started.v1",
+    PlanCompleted: "jarvis.event.planner.completed.v1",
+    PlanFailed: "jarvis.event.planner.failed.v1",
+    PlanCancelled: "jarvis.event.planner.cancelled.v1",
+    TaskCreated: "jarvis.event.planner.task_created.v1",
+    TaskAssigned: "jarvis.event.planner.task_assigned.v1",
+    TaskCompleted: "jarvis.event.planner.task_completed.v1",
+    TaskFailed: "jarvis.event.planner.task_failed.v1",
 }
 
 
@@ -122,7 +122,7 @@ async def publish_planner_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.planner.event.unknown.v1"
+                    type(event), "jarvis.event.planner.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

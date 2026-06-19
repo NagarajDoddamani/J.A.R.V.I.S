@@ -1157,7 +1157,7 @@ class TestEventFlow:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.source_registered.v1"
+        assert subject == "jarvis.event.knowledge.source_registered.v1"
 
     def test_mark_published_idempotent(
         self,

@@ -44,19 +44,19 @@ OrchestratorOutboxEvent = (
 )
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    OrchestrationCreated: "jarvis.orchestrator.event.created.v1",
-    OrchestrationPlanningStarted: "jarvis.orchestrator.event.planning_started.v1",
-    OrchestrationResearchStarted: "jarvis.orchestrator.event.research_started.v1",
-    OrchestrationExecutionStarted: "jarvis.orchestrator.event.execution_started.v1",
-    OrchestrationCompleted: "jarvis.orchestrator.event.completed.v1",
-    OrchestrationFailed: "jarvis.orchestrator.event.failed.v1",
-    OrchestrationCancelled: "jarvis.orchestrator.event.cancelled.v1",
-    WorkflowCreated: "jarvis.orchestrator.event.workflow_created.v1",
-    WorkflowCompleted: "jarvis.orchestrator.event.workflow_completed.v1",
-    WorkflowFailed: "jarvis.orchestrator.event.workflow_failed.v1",
-    WorkflowStepStarted: "jarvis.orchestrator.event.step_started.v1",
-    WorkflowStepCompleted: "jarvis.orchestrator.event.step_completed.v1",
-    WorkflowStepFailed: "jarvis.orchestrator.event.step_failed.v1",
+    OrchestrationCreated: "jarvis.event.orchestrator.created.v1",
+    OrchestrationPlanningStarted: "jarvis.event.orchestrator.planning_started.v1",
+    OrchestrationResearchStarted: "jarvis.event.orchestrator.research_started.v1",
+    OrchestrationExecutionStarted: "jarvis.event.orchestrator.execution_started.v1",
+    OrchestrationCompleted: "jarvis.event.orchestrator.completed.v1",
+    OrchestrationFailed: "jarvis.event.orchestrator.failed.v1",
+    OrchestrationCancelled: "jarvis.event.orchestrator.cancelled.v1",
+    WorkflowCreated: "jarvis.event.orchestrator.workflow_created.v1",
+    WorkflowCompleted: "jarvis.event.orchestrator.workflow_completed.v1",
+    WorkflowFailed: "jarvis.event.orchestrator.workflow_failed.v1",
+    WorkflowStepStarted: "jarvis.event.orchestrator.step_started.v1",
+    WorkflowStepCompleted: "jarvis.event.orchestrator.step_completed.v1",
+    WorkflowStepFailed: "jarvis.event.orchestrator.step_failed.v1",
 }
 
 
@@ -117,7 +117,7 @@ async def publish_orchestrator_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.orchestrator.event.unknown.v1"
+                    type(event), "jarvis.event.orchestrator.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

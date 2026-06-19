@@ -203,7 +203,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject.startswith("jarvis.knowledge.event.")
+        assert subject.startswith("jarvis.event.knowledge.")
 
     @pytest.mark.asyncio
     async def test_payload_is_json_bytes(
@@ -295,7 +295,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.source_registered.v1"
+        assert subject == "jarvis.event.knowledge.source_registered.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_source_deleted(
@@ -318,7 +318,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.source_deleted.v1"
+        assert subject == "jarvis.event.knowledge.source_deleted.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_document_ingested(
@@ -345,7 +345,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.document_ingested.v1"
+        assert subject == "jarvis.event.knowledge.document_ingested.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_document_indexed(
@@ -368,7 +368,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.document_indexed.v1"
+        assert subject == "jarvis.event.knowledge.document_indexed.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_document_deleted(
@@ -391,7 +391,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.document_deleted.v1"
+        assert subject == "jarvis.event.knowledge.document_deleted.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_chunk_created(
@@ -416,7 +416,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.chunk_created.v1"
+        assert subject == "jarvis.event.knowledge.chunk_created.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_ingestion_started(
@@ -440,7 +440,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.ingestion_started.v1"
+        assert subject == "jarvis.event.knowledge.ingestion_started.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_ingestion_completed(
@@ -463,7 +463,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.ingestion_completed.v1"
+        assert subject == "jarvis.event.knowledge.ingestion_completed.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_ingestion_failed(
@@ -487,7 +487,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.ingestion_failed.v1"
+        assert subject == "jarvis.event.knowledge.ingestion_failed.v1"
 
     @pytest.mark.asyncio
     async def test_subject_for_reindex_requested(
@@ -510,7 +510,7 @@ class TestPublishKnowledgeOutboxEvents:
         )
 
         subject = mock_js.publish.await_args[0][0]
-        assert subject == "jarvis.knowledge.event.reindex_requested.v1"
+        assert subject == "jarvis.event.knowledge.reindex_requested.v1"
 
     @pytest.mark.asyncio
     async def test_ingestion_failed_has_error_message(

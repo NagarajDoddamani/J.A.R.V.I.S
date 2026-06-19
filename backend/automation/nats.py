@@ -43,17 +43,17 @@ _EVENT_TYPE_MAP: dict[type, str] = {
 }
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    AutomationCreated: "jarvis.automation.event.automation_created.v1",
-    AutomationActivated: "jarvis.automation.event.automation_activated.v1",
-    AutomationPaused: "jarvis.automation.event.automation_paused.v1",
-    AutomationDisabled: "jarvis.automation.event.automation_disabled.v1",
-    AutomationExecutionStarted: "jarvis.automation.event.automation_execution_started.v1",
-    AutomationExecutionCompleted: "jarvis.automation.event.automation_execution_completed.v1",
-    AutomationExecutionFailed: "jarvis.automation.event.automation_execution_failed.v1",
-    TriggerAdded: "jarvis.automation.event.trigger_added.v1",
-    TriggerEnabled: "jarvis.automation.event.trigger_enabled.v1",
-    TriggerDisabled: "jarvis.automation.event.trigger_disabled.v1",
-    ActionAdded: "jarvis.automation.event.action_added.v1",
+    AutomationCreated: "jarvis.event.automation.automation_created.v1",
+    AutomationActivated: "jarvis.event.automation.automation_activated.v1",
+    AutomationPaused: "jarvis.event.automation.automation_paused.v1",
+    AutomationDisabled: "jarvis.event.automation.automation_disabled.v1",
+    AutomationExecutionStarted: "jarvis.event.automation.automation_execution_started.v1",
+    AutomationExecutionCompleted: "jarvis.event.automation.automation_execution_completed.v1",
+    AutomationExecutionFailed: "jarvis.event.automation.automation_execution_failed.v1",
+    TriggerAdded: "jarvis.event.automation.trigger_added.v1",
+    TriggerEnabled: "jarvis.event.automation.trigger_enabled.v1",
+    TriggerDisabled: "jarvis.event.automation.trigger_disabled.v1",
+    ActionAdded: "jarvis.event.automation.action_added.v1",
 }
 
 
@@ -127,7 +127,7 @@ async def publish_automation_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.automation.event.unknown.v1"
+                    type(event), "jarvis.event.automation.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from uuid import UUID
 
@@ -529,3 +530,52 @@ class TestKnowledgeOutboxMapperImpl:
         )
         with pytest.raises(ValueError, match="unknown.type"):
             mapper.dto_to_event(dto)
+
+    def test_dto_to_event_with_dict_payload(self, mapper: KnowledgeOutboxMapperImpl) -> None:
+        from backend.knowledge.application.persistence.dto import (
+            KnowledgeOutboxStorageDTO,
+        )
+        dto = KnowledgeOutboxStorageDTO(
+            event_id="10000000-0000-0000-0000-000000000001",
+            event_type="knowledge.source.registered",
+            aggregate_id="20000000-0000-0000-0000-000000000001",
+            occurred_at=NOW,
+            payload={
+                "name": "DictSource",
+                "source_type": "file",
+                "location": "/dict",
+                "classification": "public",
+            },
+        )
+        event = mapper.dto_to_event(dto)
+        assert isinstance(event, KnowledgeSourceRegistered)
+        assert event.name == "DictSource"
+        assert event.source_type == SourceType.FILE
+
+    def test_dto_to_event_with_malformed_payload(self, mapper: KnowledgeOutboxMapperImpl) -> None:
+        from backend.knowledge.application.persistence.dto import (
+            KnowledgeOutboxStorageDTO,
+        )
+        dto = KnowledgeOutboxStorageDTO(
+            event_id="10000000-0000-0000-0000-000000000001",
+            event_type="knowledge.source.registered",
+            aggregate_id="20000000-0000-0000-0000-000000000001",
+            occurred_at=NOW,
+            payload="not valid json",
+        )
+        with pytest.raises(json.JSONDecodeError):
+            mapper.dto_to_event(dto)
+
+    def test_dto_to_event_with_none_payload(self, mapper: KnowledgeOutboxMapperImpl) -> None:
+        from backend.knowledge.application.persistence.dto import (
+            KnowledgeOutboxStorageDTO,
+        )
+        dto = KnowledgeOutboxStorageDTO(
+            event_id="10000000-0000-0000-0000-000000000001",
+            event_type="knowledge.source.deleted",
+            aggregate_id="00000000-0000-0000-0000-000000000001",
+            occurred_at=NOW,
+            payload=None,
+        )
+        event = mapper.dto_to_event(dto)
+        assert isinstance(event, KnowledgeSourceDeleted)

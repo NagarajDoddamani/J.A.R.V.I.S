@@ -18,7 +18,6 @@ runtime. It is hardened against the JDOS v1.2 requirements:
 | `redis` | `redis:7-alpine` | 6379 | default | `redis-cli ping` |
 | `qdrant` | `qdrant/qdrant:v1.9.1` | 6333, 6334 | default | `GET /healthz` |
 | `nats` | `nats:2.10-alpine` | 4222, 8222 | default | `GET /healthz` |
-| `ollama` | `ollama/ollama:0.3.12` | 11434 | default | `GET /api/tags` |
 | `backend` | `jarvis-backend:dev` | 8000 | `app` | `GET /healthz` |
 
 ## Startup Ordering
@@ -26,15 +25,18 @@ runtime. It is hardened against the JDOS v1.2 requirements:
 The `backend` service uses `depends_on.condition: service_healthy`
 so it does not start until every dependency reports healthy. The
 stateful services (`postgres`, `redis`, `qdrant`, `nats`) start
-in parallel; `ollama` starts in parallel; `backend` is gated on
-all five.
+in parallel; `backend` is gated on all four.
+
+**Note:** Ollama runs natively on the host (not in Docker).
+The backend communicates with it via `OLLAMA_BASE_URL`
+(`http://127.0.0.1:11434` for local runs,
+`http://host.docker.internal:11434` for Docker backend).
 
 ## Restart Policies
 
 | Service | Policy | Rationale |
 |---|---|---|
 | `postgres`, `redis`, `qdrant`, `nats`, `backend` | `unless-stopped` | Local daemon should survive reboots. |
-| `ollama` | `unless-stopped` | Model cache is local; the daemon restarts automatically. |
 
 ## Resource Limits
 
@@ -48,7 +50,6 @@ through an ADR; the values below are starting points only.
 | `redis` | 0.5 | 384M |
 | `qdrant` | 1.0 | 1536M |
 | `nats` | 0.75 | 512M |
-| `ollama` | 4.0 | 8G |
 | `backend` | 2.0 | 2G |
 
 ## Graceful Shutdown
@@ -62,7 +63,6 @@ service a defined window to drain in-flight work:
 | `redis` | 20s | Append-Only File fsync then exit. |
 | `qdrant` | 30s | Flushes in-memory segments. |
 | `nats` | 15s | Drains subscriptions. |
-| `ollama` | 30s | Allows in-flight inference to finish. |
 | `backend` | 30s | Allows the FastAPI lifespan to close NATS/Redis/Qdrant. |
 
 ## Commands
@@ -91,7 +91,7 @@ docker compose down -v
 
 The default network is `jarvis-network` (bridge). Inter-container
 DNS resolution is enabled (`com.docker.network.bridge.enable_icc=true`)
-so backend, nats, postgres, redis, qdrant, and ollama can find
+so backend, nats, postgres, redis, and qdrant can find
 each other by service name. Masquerading is disabled to make
 unexpected outbound traffic observable in firewall logs.
 
@@ -107,7 +107,7 @@ less than 16 GB of RAM.
 | Symptom | Likely cause | Mitigation |
 |---|---|---|
 | `backend` never becomes healthy | One dependency never reports healthy | `docker compose ps`; check `docker compose logs <svc>`. |
-| `ollama` 503 on `/api/tags` | Models not pre-pulled | Run the bootstrap script: `tools/bootstrap/bootstrap.sh` (or `.ps1`). |
+| Ollama 503 on `/api/tags` | Models not pre-pulled (native host) | Run the bootstrap script, or pull manually: `ollama pull nomic-embed-text`. |
 | `qdrant` OOM | `memory: 1536M` too small | Increase `qdrant`'s `memory` limit and reload. |
 | `postgres` slow start | `pg_isready` timing out | Increase `healthcheck.start_period`. |
 | Disk usage growing | AOF / WAL retained too long | Tune `redis`'s `appendfsync` or `postgres`'s `wal_keep_size`. |

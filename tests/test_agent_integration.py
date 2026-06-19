@@ -1694,5 +1694,5 @@ class TestNatsPipeline:
         call_args = mock_js.publish.await_args
         assert call_args is not None
         subject = call_args[0][0]
-        assert subject.startswith("jarvis.agent.event.")
+        assert subject.startswith("jarvis.event.agent.")
         assert subject.endswith(".v1")

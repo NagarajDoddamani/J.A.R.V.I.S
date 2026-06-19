@@ -32,13 +32,13 @@ ResearchOutboxEvent = (
 )
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    ResearchRequested: "jarvis.research.event.requested.v1",
-    ResearchStarted: "jarvis.research.event.started.v1",
-    ResearchCompleted: "jarvis.research.event.completed.v1",
-    ResearchFailed: "jarvis.research.event.failed.v1",
-    ResearchCancelled: "jarvis.research.event.cancelled.v1",
-    SourceAdded: "jarvis.research.event.source_added.v1",
-    ResearchSummaryGenerated: "jarvis.research.event.summary_generated.v1",
+    ResearchRequested: "jarvis.event.research.requested.v1",
+    ResearchStarted: "jarvis.event.research.started.v1",
+    ResearchCompleted: "jarvis.event.research.completed.v1",
+    ResearchFailed: "jarvis.event.research.failed.v1",
+    ResearchCancelled: "jarvis.event.research.cancelled.v1",
+    SourceAdded: "jarvis.event.research.source_added.v1",
+    ResearchSummaryGenerated: "jarvis.event.research.summary_generated.v1",
 }
 
 
@@ -90,7 +90,7 @@ async def publish_research_outbox_events(
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
                 subject = _NATS_SUBJECT_MAP.get(
-                    type(event), "jarvis.research.event.unknown.v1"
+                    type(event), "jarvis.event.research.unknown.v1"
                 )
                 envelope = _build_envelope(event)
                 serialized = json.dumps(

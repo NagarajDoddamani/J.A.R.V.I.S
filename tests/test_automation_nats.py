@@ -204,7 +204,7 @@ class TestAutomationNATSPublisher:
         )
         args, _ = mock_js.publish.call_args
         subject = args[0]
-        assert subject == "jarvis.automation.event.automation_created.v1"
+        assert subject == "jarvis.event.automation.automation_created.v1"
 
     @pytest.mark.asyncio
     async def test_all_event_subjects(

@@ -117,7 +117,7 @@ class TestEventCompleteness:
 
     def test_nats_subjects_match_pattern(self) -> None:
         import re
-        pattern = re.compile(r"^jarvis\.agent\.event\.\w+\.v1$")
+        pattern = re.compile(r"^jarvis\.event\.agent\.\w+\.v1$")
         for subject in _NATS_SUBJECT_MAP.values():
             assert pattern.match(subject), f"Subject {subject!r} does not match pattern"
 

@@ -25,12 +25,12 @@ from backend.notification.domain.model import (
 )
 
 _NATS_SUBJECT_MAP: dict[type, str] = {
-    NotificationCreated: "jarvis.notification.event.created.v1",
-    NotificationShown: "jarvis.notification.event.shown.v1",
-    NotificationAcknowledged: "jarvis.notification.event.acknowledged.v1",
-    NotificationDismissed: "jarvis.notification.event.dismissed.v1",
-    NotificationExpired: "jarvis.notification.event.expired.v1",
-    NotificationActionInvoked: "jarvis.notification.event.action_invoked.v1",
+    NotificationCreated: "jarvis.event.notification.created.v1",
+    NotificationShown: "jarvis.event.notification.shown.v1",
+    NotificationAcknowledged: "jarvis.event.notification.acknowledged.v1",
+    NotificationDismissed: "jarvis.event.notification.dismissed.v1",
+    NotificationExpired: "jarvis.event.notification.expired.v1",
+    NotificationActionInvoked: "jarvis.event.notification.action_invoked.v1",
 }
 
 _EVENT_TYPE_MAP: dict[type, str] = {
@@ -89,7 +89,7 @@ async def publish_notification_outbox_events(
             repo = outbox or SqlAlchemyNotificationOutboxAdapter(db)  # type: ignore[arg-type]
             events = repo.fetch_unpublished(limit=batch)
             for event in events:
-                subject = _NATS_SUBJECT_MAP.get(type(event), "jarvis.notification.event.unknown.v1")
+                subject = _NATS_SUBJECT_MAP.get(type(event), "jarvis.event.notification.unknown.v1")
                 envelope = _build_envelope(event)
                 serialized = json.dumps(
                     envelope, separators=(",", ":")

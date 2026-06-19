@@ -163,7 +163,7 @@ class TestEventCompleteness:
     def test_nats_subjects_follow_convention(self) -> None:
         from backend.automation.nats import _NATS_SUBJECT_MAP
         for event_cls, subject in _NATS_SUBJECT_MAP.items():
-            assert subject.startswith("jarvis.automation.event."), f"{event_cls.__name__} subject {subject} does not start with jarvis.automation.event."
+            assert subject.startswith("jarvis.event.automation."), f"{event_cls.__name__} subject {subject} does not start with jarvis.event.automation."
             assert subject.endswith(".v1"), f"{event_cls.__name__} subject {subject} does not end with .v1"
 
     def test_event_types_are_disjoint(self) -> None:

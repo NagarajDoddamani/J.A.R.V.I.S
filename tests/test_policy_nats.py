@@ -206,7 +206,7 @@ class TestPolicyNATSPublisher:
         )
         args, _ = mock_js.publish.call_args
         subject = args[0]
-        assert subject == "jarvis.policy.event.policy_created.v1"
+        assert subject == "jarvis.event.policy.policy_created.v1"
 
     @pytest.mark.asyncio
     async def test_all_event_subjects(

@@ -103,15 +103,15 @@ class TestNatsSubjectMap:
             assert subject is not None, f"Missing subject for {type(event).__name__}"
 
     def test_subject_patterns(self) -> None:
-        assert _NATS_SUBJECT_MAP[ResearchRequested] == "jarvis.research.event.requested.v1"
-        assert _NATS_SUBJECT_MAP[ResearchStarted] == "jarvis.research.event.started.v1"
-        assert _NATS_SUBJECT_MAP[ResearchCompleted] == "jarvis.research.event.completed.v1"
-        assert _NATS_SUBJECT_MAP[ResearchFailed] == "jarvis.research.event.failed.v1"
-        assert _NATS_SUBJECT_MAP[ResearchCancelled] == "jarvis.research.event.cancelled.v1"
-        assert _NATS_SUBJECT_MAP[SourceAdded] == "jarvis.research.event.source_added.v1"
+        assert _NATS_SUBJECT_MAP[ResearchRequested] == "jarvis.event.research.requested.v1"
+        assert _NATS_SUBJECT_MAP[ResearchStarted] == "jarvis.event.research.started.v1"
+        assert _NATS_SUBJECT_MAP[ResearchCompleted] == "jarvis.event.research.completed.v1"
+        assert _NATS_SUBJECT_MAP[ResearchFailed] == "jarvis.event.research.failed.v1"
+        assert _NATS_SUBJECT_MAP[ResearchCancelled] == "jarvis.event.research.cancelled.v1"
+        assert _NATS_SUBJECT_MAP[SourceAdded] == "jarvis.event.research.source_added.v1"
         assert (
             _NATS_SUBJECT_MAP[ResearchSummaryGenerated]
-            == "jarvis.research.event.summary_generated.v1"
+            == "jarvis.event.research.summary_generated.v1"
         )
 
 
@@ -232,7 +232,7 @@ class TestPublishResearchOutboxEvents:
         )
 
         js.publish.assert_called_once_with(
-            "jarvis.research.event.source_added.v1",
+            "jarvis.event.research.source_added.v1",
             json.dumps(
                 {
                     "event_id": str(event.event_id),

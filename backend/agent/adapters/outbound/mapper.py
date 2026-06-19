@@ -181,7 +181,10 @@ class AgentOutboxMapperImpl:
         event_cls = _EVENT_TYPE_REVERSE.get(dto.event_type)
         if event_cls is None:
             raise ValueError(f"Unknown event_type: {dto.event_type}")
-        payload = json.loads(dto.payload) if dto.payload else {}
+        if isinstance(dto.payload, dict):
+            payload = dto.payload
+        else:
+            payload = json.loads(dto.payload) if dto.payload else {}
         aggregate_uuid = UUID(dto.aggregate_id)
         event_uuid = UUID(dto.event_id)
 

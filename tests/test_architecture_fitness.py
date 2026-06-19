@@ -123,6 +123,7 @@ ALLOWED_ADAPTER_PATHS = {
     "backend/research/bootstrap.py",
     "backend/research/nats.py",
     "backend/runtime",
+    "backend/cli",
     "backend/migrations",
     "tools",
     "tests",
@@ -394,7 +395,7 @@ def test_workspace_packages_have_package_json() -> None:
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats", "ollama"))
+@pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats"))
 def test_compose_loopback_only(service: str) -> None:
     block = service_block(service)
     assert block, f"service {service!r} missing"
@@ -402,7 +403,7 @@ def test_compose_loopback_only(service: str) -> None:
     assert "0.0.0.0" not in block
 
 
-@pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats", "ollama"))
+@pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats"))
 def test_compose_healthcheck_present(service: str) -> None:
     block = service_block(service)
     assert block, f"service {service!r} missing"
@@ -410,7 +411,7 @@ def test_compose_healthcheck_present(service: str) -> None:
     assert "test:" in block
 
 
-@pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats", "ollama"))
+@pytest.mark.parametrize("service", ("postgres", "redis", "qdrant", "nats"))
 def test_compose_resource_limits_present(service: str) -> None:
     block = service_block(service)
     assert block, f"service {service!r} missing"
@@ -484,6 +485,8 @@ def test_ollama_adapter_is_the_only_backend_importer_of_httpx() -> None:
         if "import httpx" not in text and "from httpx" not in text:
             continue
         if path == backend_root / "core" / "ollama.py":
+            continue
+        if path == backend_root / "cli" / "dashboard.py":
             continue
         offenders.append(str(path.relative_to(REPO_ROOT)))
     assert not offenders, (

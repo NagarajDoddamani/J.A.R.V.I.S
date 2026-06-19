@@ -151,7 +151,7 @@ class TestEventCompleteness:
         assert len(_NATS_SUBJECT_MAP) == 13
         for event_cls, subject in _NATS_SUBJECT_MAP.items():
             assert isinstance(subject, str)
-            assert subject.startswith("jarvis.orchestrator.event.")
+            assert subject.startswith("jarvis.event.orchestrator.")
 
     def test_all_events_have_type_in_mapper_map(self) -> None:
         from backend.orchestrator.adapters.outbound.mapper import _EVENT_TYPE_MAP
@@ -167,7 +167,7 @@ class TestEventCompleteness:
         from backend.orchestrator.nats import _NATS_SUBJECT_MAP
 
         for subject in _NATS_SUBJECT_MAP.values():
-            assert subject.startswith("jarvis.orchestrator.event.")
+            assert subject.startswith("jarvis.event.orchestrator.")
             assert subject.endswith(".v1")
             assert subject.count(".") >= 4
 
